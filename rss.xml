@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>日拱一卒</title>
+        <link>https://xffxff.github.io/</link>
+        <description>A simple blog theme focused on writing powered by Bulma and Zola</description>
+        <generator>Zola</generator>
+        <language>en</language>
+        <atom:link href="https://xffxff.github.io/rss.xml" rel="self" type="application/rss+xml"/>
+        <lastBuildDate>Mon, 26 Sep 2022 00:00:00 +0000</lastBuildDate>
+        <item>
+            <title>(WIP) Salsa: Is the tracked struct valid?</title>
+            <pubDate>Mon, 26 Sep 2022 00:00:00 +0000</pubDate>
+            <link>https://xffxff.github.io/posts/09-salsa-outdated-tracked-struct/</link>
+            <guid>https://xffxff.github.io/posts/09-salsa-outdated-tracked-struct/</guid>
+            <description>&lt;p&gt;来来回回讨论了两周，终于把这个 &lt;a rel=&quot;noopener nofollow noreferrer&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;salsa-rs&#x2F;salsa&#x2F;pull&#x2F;413&quot;&gt;PR&lt;&#x2F;a&gt;
+合进去了，这是我参与开源项目以来，第一次讨论这么多。通过这个 PR，确实有很多思
+考，对Salsa 也有了更深入的思考，值得把它们记录下来&lt;&#x2F;p&gt;
+</description>
+        </item>
+        <item>
+            <title>Salsa: tracked methods</title>
+            <pubDate>Sun, 04 Sep 2022 00:00:00 +0000</pubDate>
+            <link>https://xffxff.github.io/posts/08-salsa-tracked-method/</link>
+            <guid>https://xffxff.github.io/posts/08-salsa-tracked-method/</guid>
+            <description>&lt;p&gt;PR &lt;a rel=&quot;noopener nofollow noreferrer&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;salsa-rs&#x2F;salsa&#x2F;pull&#x2F;392&quot;&gt;392&lt;&#x2F;a&gt; supports tracked methods, I reviewed it and thought there were some notes to make, I tried to making it an RFC, although the pr was not created by me.&lt;&#x2F;p&gt;
+</description>
+        </item>
+        <item>
+            <title>Salsa: dependency 理解纠正</title>
+            <pubDate>Fri, 02 Sep 2022 00:00:00 +0000</pubDate>
+            <link>https://xffxff.github.io/posts/07-salsa-dependency/</link>
+            <guid>https://xffxff.github.io/posts/07-salsa-dependency/</guid>
+            <description>&lt;p&gt;通过一个简单的例子，发现我对 Salsa dependency 理解有误&lt;&#x2F;p&gt;
+</description>
+        </item>
+        <item>
+            <title>Salsa: LRU needs keep dependency info</title>
+            <pubDate>Tue, 23 Aug 2022 00:00:00 +0000</pubDate>
+            <link>https://xffxff.github.io/posts/06-salsa-lru-optimize/</link>
+            <guid>https://xffxff.github.io/posts/06-salsa-lru-optimize/</guid>
+            <description>&lt;p&gt;reivew &lt;a rel=&quot;noopener nofollow noreferrer&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;salsa-rs&#x2F;salsa&#x2F;pull&#x2F;371&quot;&gt;#371&lt;&#x2F;a&gt; 加深了我对 salsa 做 recomputation 的理解。&lt;&#x2F;p&gt;
+</description>
+        </item>
+        <item>
+            <title>封装我最常用的 3 个 kubectl 命令</title>
+            <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
+            <link>https://xffxff.github.io/posts/05-kubeutil/</link>
+            <guid>https://xffxff.github.io/posts/05-kubeutil/</guid>
+            <description>&lt;p&gt;这篇文章介绍了我最常用的 3 个 &lt;code&gt;kubectl&lt;&#x2F;code&gt; 命令，以及如何使用 bash 脚本将它们封装成我喜欢的样子。&lt;&#x2F;p&gt;
+</description>
+        </item>
+        <item>
+            <title>golang http WriteHeader 的一个注意事项</title>
+            <pubDate>Mon, 08 Aug 2022 00:00:00 +0000</pubDate>
+            <link>https://xffxff.github.io/posts/04-golang-http-writeheader/</link>
+            <guid>https://xffxff.github.io/posts/04-golang-http-writeheader/</guid>
+            <description>&lt;span id=&quot;continue-reading&quot;&gt;&lt;&#x2F;span&gt;&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#2b303b;color:#6c7079;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;package &lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;main
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;import &lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;(
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;&amp;quot;encoding&#x2F;json&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;&amp;quot;fmt&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;&amp;quot;log&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;&amp;quot;net&#x2F;http&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;&amp;quot;net&#x2F;http&#x2F;httptest&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span style=&quot;color:#5cb3fa;&quot;&gt;main&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;() {
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;ts &lt;&#x2F;span&gt;&lt;span style=&quot;color:#adb7c9;&quot;&gt;:= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;httptest&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;NewServer&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;http&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;HandlerFunc&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;func&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;w http&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;ResponseWriter&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;r &lt;&#x2F;span&gt;&lt;span style=&quot;color:#adb7c9;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;http&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;Request&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;		&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;json&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;NewEncoder&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;w&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;).&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;Encode&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;map&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;{&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;&amp;quot;key&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;&amp;quot;value&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;})
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	}))
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;defer &lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;ts&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;Close&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;()
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;res&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;err &lt;&#x2F;span&gt;&lt;span style=&quot;color:#adb7c9;&quot;&gt;:= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;http&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;Get&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;ts&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;URL&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;fmt&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;Printf&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;&amp;quot;res.Status: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#db9d63;&quot;&gt;%v&lt;&#x2F;span&gt;&lt;span style=&quot;color:#5ebfcc;&quot;&gt;\n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;res&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;Status&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;fmt&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;Printf&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;&amp;quot;res.Header: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#db9d63;&quot;&gt;%v&lt;&#x2F;span&gt;&lt;span style=&quot;color:#5ebfcc;&quot;&gt;\n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;res&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;Header&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;&amp;quot;Content-Type&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;])
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;err &lt;&#x2F;span&gt;&lt;span style=&quot;color:#adb7c9;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#db9d63;&quot;&gt;nil &lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;{
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;		&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;log&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;Fatal&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;err&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	}
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;var &lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;data &lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;map&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;string
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;err &lt;&#x2F;span&gt;&lt;span style=&quot;color:#adb7c9;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;json&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;NewDecoder&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;res&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;Body&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;).&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;Decode&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#adb7c9;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;res&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;Body&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;Close&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;()
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;err &lt;&#x2F;span&gt;&lt;span style=&quot;color:#adb7c9;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#db9d63;&quot;&gt;nil &lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;{
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;		&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;log&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;Fatal&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;err&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	}
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;fmt&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;Printf&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;&amp;quot;data: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#db9d63;&quot;&gt;%v&lt;&#x2F;span&gt;&lt;span style=&quot;color:#5ebfcc;&quot;&gt;\n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;a rel=&quot;noopener nofollow noreferrer&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;go.dev&#x2F;play&#x2F;p&#x2F;vNKFQKHVOKd&quot;&gt;PlayGround&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;运行结果&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#6c7079;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;res.Status:&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt; 200 OK
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;res.Header: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;text&#x2F;plain; charset=utf&lt;&#x2F;span&gt;&lt;span style=&quot;color:#adb7c9;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;8&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#eb6772;&quot;&gt;data:&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt; map&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;key:value&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cd74e8;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;希望返回的 &lt;code&gt;Content-Type&lt;&#x2F;code&gt; 为 json，很简单，只需要在返回的 response 中设置 &lt;code&gt;Content-Type&lt;&#x2F;code&gt; 就好了&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;diff&quot; style=&quot;background-color:#2b303b;color:#6c7079;&quot; class=&quot;language-diff &quot;&gt;&lt;code class=&quot;language-diff&quot; data-lang=&quot;diff&quot;&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt; func main() {
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;        ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;+               w.WriteHeader(http.StatusOK)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;+               w.Header().Set(&amp;quot;Content-Type&amp;quot;, &amp;quot;application&#x2F;json&amp;quot;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;                json.NewEncoder(w).Encode(map[string]string{&amp;quot;key&amp;quot;: &amp;quot;value&amp;quot;})
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;        }))
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;        defer ts.Close()
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;a rel=&quot;noopener nofollow noreferrer&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;go.dev&#x2F;play&#x2F;p&#x2F;56gWJmIiBP3&quot;&gt;PlayGround&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;奇怪的事情发生了，结果没有改变，&lt;code&gt;Content-Type&lt;&#x2F;code&gt; 仍然为 &lt;code&gt;text&#x2F;plain&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
+&lt;p&gt;反复尝试后发现，不加 &lt;code&gt;WriteHeader&lt;&#x2F;code&gt; 返回的 &lt;code&gt;Content-Type&lt;&#x2F;code&gt; 就为 &lt;code&gt;application&#x2F;json&lt;&#x2F;code&gt; 了&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;diff&quot; style=&quot;background-color:#2b303b;color:#6c7079;&quot; class=&quot;language-diff &quot;&gt;&lt;code class=&quot;language-diff&quot; data-lang=&quot;diff&quot;&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;func main() {
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;        ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;+               w.Header().Set(&amp;quot;Content-Type&amp;quot;, &amp;quot;application&#x2F;json&amp;quot;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;                json.NewEncoder(w).Encode(map[string]string{&amp;quot;key&amp;quot;: &amp;quot;value&amp;quot;})
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;        }))
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;        defer ts.Close()
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;a rel=&quot;noopener nofollow noreferrer&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;go.dev&#x2F;play&#x2F;p&#x2F;AFKdAdp1Gty&quot;&gt;PlayGround&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;在 go 的一个 &lt;a rel=&quot;noopener nofollow noreferrer&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;golang&#x2F;go&#x2F;issues&#x2F;17083#issuecomment-246544520&quot;&gt;issue&lt;&#x2F;a&gt; 中找到了答案，对 &lt;code&gt;Header&lt;&#x2F;code&gt; 的更改只能发生在 &lt;code&gt;WriteHeader&lt;&#x2F;code&gt; 之前。 &lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a rel=&quot;noopener nofollow noreferrer&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;pkg.go.dev&#x2F;net&#x2F;http#ResponseWriter&quot;&gt;文档&lt;&#x2F;a&gt;中其实已经写得很清楚了&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Header returns the header map that will be sent by WriteHeader. Changing the header map after a call to WriteHeader (or Write) has no effect&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;也就是说下面这种写法是 OK 的&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;diff&quot; style=&quot;background-color:#2b303b;color:#6c7079;&quot; class=&quot;language-diff &quot;&gt;&lt;code class=&quot;language-diff&quot; data-lang=&quot;diff&quot;&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt; func main() {
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;        ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;+               w.Header().Set(&amp;quot;Content-Type&amp;quot;, &amp;quot;application&#x2F;json&amp;quot;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#9acc76;&quot;&gt;+               w.WriteHeader(http.StatusOK)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;                json.NewEncoder(w).Encode(map[string]string{&amp;quot;key&amp;quot;: &amp;quot;value&amp;quot;})
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;        }))
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#abb2bf;&quot;&gt;        defer ts.Close()
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</description>
+        </item>
+        <item>
+            <title>一个关于 go 语言的有趣例子</title>
+            <pubDate>Thu, 31 Mar 2022 00:00:00 +0000</pubDate>
+            <link>https://xffxff.github.io/posts/03-an-interesting-example-of-go/</link>
+            <guid>https://xffxff.github.io/posts/03-an-interesting-example-of-go/</guid>
+            <description>&lt;p&gt;最近公司项目要用到 go，在看同事代码的时候发现一个有趣的写法，接下来我尝试用简单的例子去复现。&lt;&#x2F;p&gt;
+</description>
+        </item>
+        <item>
+            <title>IR 竟然是......</title>
+            <pubDate>Sat, 26 Feb 2022 00:00:00 +0000</pubDate>
+            <link>https://xffxff.github.io/posts/02-ir/</link>
+            <guid>https://xffxff.github.io/posts/02-ir/</guid>
+            <description>&lt;blockquote&gt;
+&lt;p&gt;When you&#x27;re programming, it&#x27;s amazing what a difference the choice of IR can make. I&#x27;ve often found that when something seems too hard, it&#x27;s because I need to introduce a primary transformation into some form that makes the problem easier. Well, likewise, as we do research, we should think about the medium and tools we are using and make sure they&#x27;re a good match for our goals.
+-- &lt;cite&gt;nikomatsakis&lt;&#x2F;cite&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;上面这段话是 nikomatsakis 在 &lt;a rel=&quot;noopener nofollow noreferrer&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;nikomatsakis&#x2F;plmw-2022&quot;&gt;PLWM 2022&lt;&#x2F;a&gt; 上讲的，今天对这段话似乎有了一点理解，记录一下。&lt;&#x2F;p&gt;
+</description>
+        </item>
+        <item>
+            <title>Implementing languages for fun and profit 笔记</title>
+            <pubDate>Mon, 21 Feb 2022 00:00:00 +0000</pubDate>
+            <link>https://xffxff.github.io/posts/01-plwm-note/</link>
+            <guid>https://xffxff.github.io/posts/01-plwm-note/</guid>
+            <description>&lt;p&gt;本文是 nikomatsakis 在 &lt;a rel=&quot;noopener nofollow noreferrer&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;nikomatsakis&#x2F;plmw-2022&quot;&gt;PLWM 2022&lt;&#x2F;a&gt; 演讲的一点笔记。&lt;&#x2F;p&gt;
+&lt;p&gt;传统编译器的工作模式是自底向上的。读取源代码，lexer 将源文本转换为一连串的 token，这些 token 输入给 parser ，parser 生成 syntax tree。Type checker 顾名思义会做一些类型检查，optimizer 会把 syntax tree&#x2F;ast 转换成一些中间表示，coder generator 生成最终的可执行程序。&lt;&#x2F;p&gt;
+</description>
+        </item>
+    </channel>
+</rss>

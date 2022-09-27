@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta content="#ffffff" name="theme-color" />
+  <meta content="#da532c" name="msapplication-TileColor" />
+
+  
+  <link href='&#x2F;icons&#x2F;site.webmanifest' rel="manifest" />
+  
+  
+  <link color="#5bbad5" href='&#x2F;icons&#x2F;safari-pinned-tab.svg' rel="mask-icon" />
+  
+  
+  <link href='&#x2F;icons&#x2F;favicon-16x16.png' rel="icon" sizes="16x16" type="image/png" />
+  
+  
+  <link href='&#x2F;icons&#x2F;favicon-32x32.png' rel="icon" sizes="32x32" type="image/png" />
+  
+  
+  <link href='&#x2F;icons&#x2F;apple-touch-icon.png' rel="apple-touch-icon" sizes="180x180" />
+  
+
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/themes/folio/galleria.folio.min.css" integrity="sha384-+rY0QD+LRnTOquDMzGa9lXU6jIwdiQuwCJQ2cdcW0qeP/0UbjQCZlXnRsUMA+9pH" crossorigin="anonymous">
+  
+
+  
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" integrity="sha384-oGm59HWAkwO32h2w8u0B98wKBZJwd6MbWtAJwQKCTffZjOXHXrnyv9Syjovgc+UV" crossorigin="anonymous">
+  
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1.9.1/css/academicons.min.css" integrity="sha384-FIue+PI4SsI9XfHCz8dBLg33b0c1fMJgNU3X//L26FYbGnlSEfWmNT7zgWc2N9b6" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" integrity="sha256-rTpdO0HXBCNpreAHcu6tB2Ppg515Vo+5GtYSsnNLz+8=" crossorigin="anonymous">
+  <link href="https://xffxff.github.io/deep-thought.css" rel="stylesheet" />
+  
+  
+
+  <title>
+    
+日拱一卒 | Salsa: LRU needs keep dependency info
+
+  </title>
+
+  
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-176984489-2"></script>
+  <script type="text/javascript">
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+    gtag("config", "UA-176984489-2");
+  </script>
+  
+  
+
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css" integrity="sha384-R4558gYOUz8mP9YWpZJjofhk+zx0AS11p36HnD2ZKj/6JR5z27gSSULCNHIRReVs" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" integrity="sha384-z1fJDqw8ZApjGO3/unPWUPsIymfsJmyrDVWC8Tv/a1HeOtGmkwNd/7xUS0Xcnvsx" crossorigin="anonymous"></script>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/mathtex-script-type.min.js" integrity="sha384-jiBVvJ8NGGj5n7kJaiWwWp9AjC+Yh8rhZY3GtAX8yU28azcLgoRo4oukO87g7zDT" crossorigin="anonymous"></script>
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"></script>
+  
+  
+</head>
+
+<body class="has-background-white">
+  <nav aria-label="section navigation" class="navbar is-light" role="navigation">
+    <div class="container">
+      <div class="navbar-brand">
+        <a class="navbar-item is-size-5 has-text-weight-bold" href="https:&#x2F;&#x2F;xffxff.github.io&#x2F;">日拱一卒</a>
+        <a aria-expanded="false" aria-label="menu" class="navbar-burger burger" data-target="navMenu" role="button">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div class="navbar-menu" id="navMenu">
+        <div class="navbar-end has-text-centered">
+          
+          
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;xffxff.github.io&#x2F;&#x2F;tags">
+            Tags
+          </a>
+          
+          
+          
+          <a class="navbar-item" id="nav-search" title="Search" data-target="#search-modal">
+            <span class="icon">
+              <i class="fas fa-search"></i>
+            </span>
+          </a>
+          <a class="navbar-item" id="dark-mode" title="Switch to dark theme">
+            <span class="icon">
+              <i class="fas fa-adjust"></i>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  
+  
+
+  
+<section class="section">
+  <div class="container">
+    <div class="columns">
+      <div class="column is-8 is-offset-2">
+        <article class="box">
+          <h1 class="title">
+            Salsa: LRU needs keep dependency info
+          </h1>
+          <p class="subtitle"></p>
+          <div class="columns is-multiline is-gapless">
+            <div class="column is-8">
+              
+<span class="icon-text has-text-grey">
+  <span class="icon">
+    <i class="fas fa-user"></i>
+  </span>
+  <span>XFFXFF published on</span>
+  <span class="icon">
+    <i class="far fa-calendar-alt"></i>
+  </span>
+  <span><time datetime="2022-08-23">August 23, 2022</time></span>
+</span>
+
+            </div>
+            <div class="column is-4 has-text-right-desktop">
+              
+<span class="icon-text has-text-grey">
+  <span class="icon">
+    <i class="far fa-clock"></i>
+  </span>
+  <span>5 min,</span>
+  <span class="icon">
+    <i class="fas fa-pencil-alt"></i>
+  </span>
+  <span>852 words</span>
+</span>
+
+            </div>
+            <div class="column">
+              
+            </div>
+            <div class="column has-text-right-desktop">
+              
+              
+<p>
+  Tags:
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://xffxff.github.io/tags/salsa/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-tag"></i>
+      </span>
+      <span>salsa</span>
+    </span>
+  </a>
+  
+</p>
+
+              
+            </div>
+          </div>
+          <div class="content mt-2">
+            <p>reivew <a rel="noopener nofollow noreferrer" target="_blank" href="https://github.com/salsa-rs/salsa/pull/371">#371</a> 加深了我对 salsa 做 recomputation 的理解。</p>
+<span id="continue-reading"></span>
+<p>我们先来看一个测试，思考这个测试能否 pass</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#6c7079;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#abb2bf;">#[</span><span style="color:#eb6772;">salsa</span><span style="color:#abb2bf;">::</span><span style="color:#eb6772;">tracked</span><span style="color:#abb2bf;">(jar </span><span style="color:#adb7c9;">=</span><span style="color:#abb2bf;"> Jar, lru </span><span style="color:#adb7c9;">=</span><span style="color:#abb2bf;"> 3)]
+</span><span style="color:#cd74e8;">fn </span><span style="color:#5cb3fa;">get_hot_potato</span><span style="color:#abb2bf;">(</span><span style="color:#eb6772;">db</span><span style="color:#abb2bf;">: </span><span style="color:#adb7c9;">&amp;</span><span style="color:#abb2bf;">dyn Db, </span><span style="color:#eb6772;">input</span><span style="color:#abb2bf;">: MyInput) -&gt; Arc&lt;HotPotato&gt; {
+</span><span style="color:#abb2bf;">    db.</span><span style="color:#5ebfcc;">push_log</span><span style="color:#abb2bf;">(format!(</span><span style="color:#9acc76;">&quot;get_hot_potato(</span><span style="color:#db9d63;">{:?}</span><span style="color:#9acc76;">)&quot;</span><span style="color:#abb2bf;">, input.</span><span style="color:#5ebfcc;">field</span><span style="color:#abb2bf;">(db)));
+</span><span style="color:#abb2bf;">    Arc::new(HotPotato::new(input.</span><span style="color:#5ebfcc;">field</span><span style="color:#abb2bf;">(db)))
+</span><span style="color:#abb2bf;">}
+</span><span style="color:#abb2bf;">
+</span><span style="color:#abb2bf;">#[</span><span style="color:#eb6772;">salsa</span><span style="color:#abb2bf;">::</span><span style="color:#eb6772;">tracked</span><span style="color:#abb2bf;">(jar </span><span style="color:#adb7c9;">=</span><span style="color:#abb2bf;"> Jar)]
+</span><span style="color:#cd74e8;">fn </span><span style="color:#5cb3fa;">get_hot_potato2</span><span style="color:#abb2bf;">(</span><span style="color:#eb6772;">db</span><span style="color:#abb2bf;">: </span><span style="color:#adb7c9;">&amp;</span><span style="color:#abb2bf;">dyn Db, </span><span style="color:#eb6772;">input</span><span style="color:#abb2bf;">: MyInput) -&gt; </span><span style="color:#cd74e8;">u32 </span><span style="color:#abb2bf;">{
+</span><span style="color:#abb2bf;">    db.</span><span style="color:#5ebfcc;">push_log</span><span style="color:#abb2bf;">(format!(</span><span style="color:#9acc76;">&quot;get_hot_potato2(</span><span style="color:#db9d63;">{:?}</span><span style="color:#9acc76;">)&quot;</span><span style="color:#abb2bf;">, input.</span><span style="color:#5ebfcc;">field</span><span style="color:#abb2bf;">(db)));
+</span><span style="color:#abb2bf;">    </span><span style="color:#5ebfcc;">get_hot_potato</span><span style="color:#abb2bf;">(db, input).</span><span style="color:#db9d63;">0
+</span><span style="color:#abb2bf;">}
+</span><span style="color:#abb2bf;">
+</span><span style="color:#abb2bf;">#[</span><span style="color:#eb6772;">test</span><span style="color:#abb2bf;">]
+</span><span style="color:#cd74e8;">fn </span><span style="color:#5cb3fa;">lru_keeps_dependency_info</span><span style="color:#abb2bf;">() {
+</span><span style="color:#abb2bf;">    </span><span style="color:#cd74e8;">let mut</span><span style="color:#abb2bf;"> db </span><span style="color:#adb7c9;">= </span><span style="color:#abb2bf;">Database::default();
+</span><span style="color:#abb2bf;">    </span><span style="color:#cd74e8;">let</span><span style="color:#abb2bf;"> capacity </span><span style="color:#adb7c9;">= </span><span style="color:#db9d63;">3</span><span style="color:#abb2bf;">;
+</span><span style="color:#abb2bf;">
+</span><span style="color:#abb2bf;">    </span><span style="font-style:italic;color:#5f697a;">// Invoke `get_hot_potato2` 33 times. This will (in turn) invoke
+</span><span style="color:#abb2bf;">    </span><span style="font-style:italic;color:#5f697a;">// `get_hot_potato`, which will trigger LRU after 32 executions.
+</span><span style="color:#abb2bf;">    </span><span style="color:#cd74e8;">let</span><span style="color:#abb2bf;"> inputs: Vec&lt;MyInput&gt; </span><span style="color:#adb7c9;">= </span><span style="color:#abb2bf;">(</span><span style="color:#db9d63;">0</span><span style="color:#adb7c9;">..</span><span style="color:#abb2bf;">(capacity </span><span style="color:#adb7c9;">+ </span><span style="color:#db9d63;">1</span><span style="color:#abb2bf;">))
+</span><span style="color:#abb2bf;">        .</span><span style="color:#5ebfcc;">map</span><span style="color:#abb2bf;">(|</span><span style="color:#eb6772;">i</span><span style="color:#abb2bf;">| MyInput::new(</span><span style="color:#adb7c9;">&amp;</span><span style="color:#cd74e8;">mut</span><span style="color:#abb2bf;"> db, i </span><span style="color:#adb7c9;">as </span><span style="color:#cd74e8;">u32</span><span style="color:#abb2bf;">))
+</span><span style="color:#abb2bf;">        .</span><span style="color:#5ebfcc;">collect</span><span style="color:#abb2bf;">();
+</span><span style="color:#abb2bf;">
+</span><span style="color:#abb2bf;">    </span><span style="color:#cd74e8;">for </span><span style="color:#abb2bf;">(i, input) </span><span style="color:#adb7c9;">in</span><span style="color:#abb2bf;"> inputs.</span><span style="color:#5ebfcc;">iter</span><span style="color:#abb2bf;">().</span><span style="color:#5ebfcc;">enumerate</span><span style="color:#abb2bf;">() {
+</span><span style="color:#abb2bf;">        </span><span style="color:#cd74e8;">let</span><span style="color:#abb2bf;"> x </span><span style="color:#adb7c9;">= </span><span style="color:#5ebfcc;">get_hot_potato2</span><span style="color:#abb2bf;">(</span><span style="color:#adb7c9;">&amp;</span><span style="color:#abb2bf;">db, </span><span style="color:#adb7c9;">*</span><span style="color:#abb2bf;">input);
+</span><span style="color:#abb2bf;">        assert_eq!(x </span><span style="color:#adb7c9;">as </span><span style="color:#cd74e8;">usize</span><span style="color:#abb2bf;">, i);
+</span><span style="color:#abb2bf;">    }
+</span><span style="color:#abb2bf;">
+</span><span style="color:#abb2bf;">    db.</span><span style="color:#5ebfcc;">salsa_runtime_mut</span><span style="color:#abb2bf;">()
+</span><span style="color:#abb2bf;">        .</span><span style="color:#5ebfcc;">synthetic_write</span><span style="color:#abb2bf;">(salsa::Durability::</span><span style="color:#db9d63;">HIGH</span><span style="color:#abb2bf;">);
+</span><span style="color:#abb2bf;">
+</span><span style="color:#abb2bf;">    </span><span style="font-style:italic;color:#5f697a;">// We want to test that calls to `get_hot_potato2` are still considered
+</span><span style="color:#abb2bf;">    </span><span style="font-style:italic;color:#5f697a;">// clean. Check that no new executions occur as we go here.
+</span><span style="color:#abb2bf;">    db.</span><span style="color:#5ebfcc;">assert_logs_len</span><span style="color:#abb2bf;">((capacity </span><span style="color:#adb7c9;">+ </span><span style="color:#db9d63;">1</span><span style="color:#abb2bf;">) </span><span style="color:#adb7c9;">* </span><span style="color:#db9d63;">2</span><span style="color:#abb2bf;">);
+</span><span style="color:#abb2bf;">
+</span><span style="color:#abb2bf;">    </span><span style="font-style:italic;color:#5f697a;">// calling `get_hot_potato2(0)` has to check that `get_hot_potato(0)` is still valid;
+</span><span style="color:#abb2bf;">    </span><span style="font-style:italic;color:#5f697a;">// even though we&#39;ve evicted it (LRU), we find that it is still good
+</span><span style="color:#abb2bf;">    </span><span style="color:#cd74e8;">let</span><span style="color:#abb2bf;"> p </span><span style="color:#adb7c9;">= </span><span style="color:#5ebfcc;">get_hot_potato2</span><span style="color:#abb2bf;">(</span><span style="color:#adb7c9;">&amp;</span><span style="color:#abb2bf;">db, </span><span style="color:#adb7c9;">*</span><span style="color:#abb2bf;">inputs.</span><span style="color:#5ebfcc;">first</span><span style="color:#abb2bf;">().</span><span style="color:#5ebfcc;">unwrap</span><span style="color:#abb2bf;">());
+</span><span style="color:#abb2bf;">    assert_eq!(p, </span><span style="color:#db9d63;">0</span><span style="color:#abb2bf;">);
+</span><span style="color:#abb2bf;">    db.</span><span style="color:#5ebfcc;">assert_logs_len</span><span style="color:#abb2bf;">(</span><span style="color:#db9d63;">0</span><span style="color:#abb2bf;">);
+</span><span style="color:#abb2bf;">}
+</span></code></pre>
+<p>这个测试是要做什么？</p>
+<p>为了方便，将 <code>get_hot_potato</code> 记为 <code>get</code>，<code>get_hot_potato2</code> 记为 <code>get2</code>。</p>
+<p>我们有两个 tracked function：<code>get</code> 和 <code>get2</code>，不用关心这两个 function 做了啥，只需要知道
+<code>get2</code> 调用了 <code>get</code>，也就是说 <code>get2</code> 依赖 <code>get</code> 的结果。另一个需要注意的点是 <code>get</code> 设置了 <code>lru = 3</code>，而 <code>get2</code> 没有设置 lru。</p>
+<p>现在调用 get2 四次，来看看 salsa 内部的状态，<code>get</code> 并没有存储 input 为 0 的结果，因为它设置了
+<code>lru = 3</code>，input 为 0 的结果被 evict 了。</p>
+<pre style="background-color:#2b303b;color:#6c7079;"><code><span style="color:#abb2bf;">+-------+----------------+-----------------+
+</span><span style="color:#abb2bf;">| input | get | get2 |
+</span><span style="color:#abb2bf;">+-------+----------------+-----------------+
+</span><span style="color:#abb2bf;">|   0   |                |        0        |
+</span><span style="color:#abb2bf;">+-------+----------------+-----------------+
+</span><span style="color:#abb2bf;">|   1   |        1       |        1        |
+</span><span style="color:#abb2bf;">+-------+----------------+-----------------+
+</span><span style="color:#abb2bf;">|   2   |        2       |        2        |
+</span><span style="color:#abb2bf;">+-------+----------------+-----------------+
+</span><span style="color:#abb2bf;">|   3   |        3       |        3        |
+</span><span style="color:#abb2bf;">+-------+----------------+-----------------+
+</span></code></pre>
+<p>我们现在调用 <code>get2(0)</code>（这里应该写 <code>input0</code> 会比较好，<code>input0 = MyInput::new(&amp;mut db, 0)</code>，但为了简单就写了 0），
+能直接用 salsa 存储的结果吗？还需要重新计算吗？显然不用，不是存储有吗？那如果现在有别的输入改变了 salsa 的 <code>current_revision</code> 呢? 
+<code>db.salsa_runtime_mut().synthetic_write(salsa::Durability::HIGH)</code>
+就是在做这件事。也就是说 salsa 的 <code>current_revision</code> 大于 <code>get</code> 和 <code>get2</code> 结果被 verify 
+的 revision。这意味着 <a rel="noopener nofollow noreferrer" target="_blank" href="https://github.com/salsa-rs/salsa/blob/d3f0077d212d76ae81e6df0b7614ece9df469ed0/components/salsa-2022/src/function/maybe_changed_after.rs#L107-L135">shallow_verify_memo</a> 不能确定 <code>get2(0)</code> 的结果是否能用，得让 <a rel="noopener nofollow noreferrer" target="_blank" href="https://github.com/salsa-rs/salsa/blob/d3f0077d212d76ae81e6df0b7614ece9df469ed0/components/salsa-2022/src/function/maybe_changed_after.rs#L145-L202">deep_verify_memo</a>
+去进一步判断。<code>deep_verify_memo</code> 会检查 <code>get2(0)</code> 依赖的其他计算结果有没有改变，所以会去查看 <code>get(0)</code>，
+发现压根儿没有存储 <code>get(0)</code> 的结果，当然也没法判断它有没有改变，只能保守地认为发生了改变，所以 <code>get2(0)</code> 和
+<code>get(0)</code> 都会重新计算。</p>
+<p>显然，这不够好，实际上 <code>get2(0)</code> 的结果是可以重用的，因为 <code>get(0)</code> 的结果虽然被 evict 了，但并没有发生改变。
+<strong>在我们这个场景下，<code>get2(0)</code> 并不关心 <code>get(0)</code> 的结果是多少，只关心从它上次被 verify 后有没有发生改变</strong>。</p>
+<p>有没有方法去优化它呢？<a rel="noopener nofollow noreferrer" target="_blank" href="https://github.com/salsa-rs/salsa/pull/371">#371</a> 提供了一种解决方案。我们 evict 的时候，不再直接删除整个 <code>Memo</code>，只是把 <code>Memo.value</code> 设置为 <code>None</code>，保留
+<code>verified_at</code> 和 <code>revisions</code>。</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#6c7079;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="font-style:italic;color:#5f697a;">/// Evicts the existing memo for the given key, replacing it
+</span><span style="font-style:italic;color:#5f697a;">/// with an equivalent memo that has no value. If the memo is untracked, BaseInput, 
+</span><span style="font-style:italic;color:#5f697a;">/// or has values assigned as output of another query, this has no effect.
+</span><span style="color:#cd74e8;">pub</span><span style="color:#abb2bf;">(</span><span style="color:#cd74e8;">super</span><span style="color:#abb2bf;">) </span><span style="color:#cd74e8;">fn </span><span style="color:#5cb3fa;">evict</span><span style="color:#abb2bf;">(</span><span style="color:#adb7c9;">&amp;</span><span style="color:#eb6772;">self</span><span style="color:#abb2bf;">, </span><span style="color:#eb6772;">key</span><span style="color:#abb2bf;">: K) {
+</span><span style="color:#abb2bf;">    </span><span style="color:#cd74e8;">use </span><span style="color:#abb2bf;">dashmap::mapref::entry::Entry::</span><span style="color:#adb7c9;">*</span><span style="color:#abb2bf;">;
+</span><span style="color:#abb2bf;">    </span><span style="color:#cd74e8;">use crate</span><span style="color:#abb2bf;">::runtime::local_state::QueryOrigin;
+</span><span style="color:#abb2bf;">
+</span><span style="color:#abb2bf;">    </span><span style="color:#cd74e8;">if let</span><span style="color:#abb2bf;"> Occupied(entry )</span><span style="color:#adb7c9;">=  </span><span style="color:#eb6772;">self</span><span style="color:#abb2bf;">.map.</span><span style="color:#5ebfcc;">entry</span><span style="color:#abb2bf;">(key) {
+</span><span style="color:#abb2bf;">        </span><span style="color:#cd74e8;">let</span><span style="color:#abb2bf;"> memo </span><span style="color:#adb7c9;">=</span><span style="color:#abb2bf;"> entry.</span><span style="color:#5ebfcc;">get</span><span style="color:#abb2bf;">().</span><span style="color:#5ebfcc;">load</span><span style="color:#abb2bf;">();
+</span><span style="color:#abb2bf;">        </span><span style="color:#cd74e8;">match</span><span style="color:#abb2bf;"> memo.revisions.origin {
+</span><span style="color:#abb2bf;">            QueryOrigin::Assigned(</span><span style="color:#adb7c9;">_</span><span style="color:#abb2bf;">)
+</span><span style="color:#abb2bf;">            </span><span style="color:#adb7c9;">| </span><span style="color:#abb2bf;">QueryOrigin::DerivedUntracked(</span><span style="color:#adb7c9;">_</span><span style="color:#abb2bf;">)
+</span><span style="color:#abb2bf;">            </span><span style="color:#adb7c9;">| </span><span style="color:#abb2bf;">QueryOrigin::BaseInput
+</span><span style="color:#abb2bf;">            </span><span style="color:#adb7c9;">| </span><span style="color:#abb2bf;">QueryOrigin::Field </span><span style="color:#adb7c9;">=&gt; </span><span style="color:#abb2bf;">{
+</span><span style="color:#abb2bf;">                </span><span style="font-style:italic;color:#5f697a;">// Careful: Cannot evict memos whose values were
+</span><span style="color:#abb2bf;">                </span><span style="font-style:italic;color:#5f697a;">// assigned as output of another query
+</span><span style="color:#abb2bf;">                </span><span style="font-style:italic;color:#5f697a;">// or those with untracked inputs
+</span><span style="color:#abb2bf;">                </span><span style="font-style:italic;color:#5f697a;">// as their values cannot be reconstructed.
+</span><span style="color:#abb2bf;">                </span><span style="color:#cd74e8;">return</span><span style="color:#abb2bf;">;
+</span><span style="color:#abb2bf;">            },
+</span><span style="color:#abb2bf;">            
+</span><span style="color:#abb2bf;">            QueryOrigin::Derived(</span><span style="color:#adb7c9;">_</span><span style="color:#abb2bf;">) </span><span style="color:#adb7c9;">=&gt; </span><span style="color:#abb2bf;">{
+</span><span style="color:#abb2bf;">                </span><span style="color:#cd74e8;">let</span><span style="color:#abb2bf;"> memo_evicted </span><span style="color:#adb7c9;">= </span><span style="color:#abb2bf;">Arc::new(Memo::new(
+</span><span style="color:#abb2bf;">                    None::&lt;V&gt;,
+</span><span style="color:#abb2bf;">                    memo.verified_at.</span><span style="color:#5ebfcc;">load</span><span style="color:#abb2bf;">(),
+</span><span style="color:#abb2bf;">                    memo.revisions.</span><span style="color:#5ebfcc;">clone</span><span style="color:#abb2bf;">(),
+</span><span style="color:#abb2bf;">                ));
+</span><span style="color:#abb2bf;">
+</span><span style="color:#abb2bf;">                entry.</span><span style="color:#5ebfcc;">get</span><span style="color:#abb2bf;">().</span><span style="color:#5ebfcc;">store</span><span style="color:#abb2bf;">(memo_evicted);
+</span><span style="color:#abb2bf;">            }
+</span><span style="color:#abb2bf;">        }
+</span><span style="color:#abb2bf;">    }
+</span><span style="color:#abb2bf;">}
+</span></code></pre>
+
+          </div>
+        </article>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+
+  
+  <section class="modal" id="search-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Search</p>
+      </header>
+      <section class="modal-card-body">
+        <div class="field mb-2">
+          <div class="control">
+            <input class="input" id="search" placeholder="Search this website." type="search" />
+          </div>
+        </div>
+        <div class="search-results">
+          <div class="search-results__items"></div>
+        </div>
+      </section>
+    </div>
+    <button aria-label="close" class="modal-close is-large"></button>
+  </section>
+  
+
+
+  
+
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <nav class="level">
+          
+          <div class="level-item has-text-centered">
+            <a class="button is-black is-outlined" href="https:&#x2F;&#x2F;xffxff.github.io&#x2F;posts&#x2F;07-salsa-dependency&#x2F;">
+              <span class="icon mr-2">
+                <i class="fas fa-arrow-circle-left"></i>
+              </span>
+              Salsa: dependency 理解纠正
+            </a>
+          </div>
+           
+          <div class="level-item has-text-centered">
+            <a class="button is-black is-outlined" href="https:&#x2F;&#x2F;xffxff.github.io&#x2F;posts&#x2F;05-kubeutil&#x2F;">
+              封装我最常用的 3 个 kubectl 命令<span class="icon ml-2">
+                <i class="fas fa-arrow-circle-right"></i>
+              </span>
+            </a>
+          </div>
+            
+        </nav>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+  
+
+
+
+  
+  <footer class="footer py-4">
+    <div class="content has-text-centered">
+      <p>
+        Built with
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-code"></i>
+          </span>
+          <span>code</span>
+        </span>
+        and
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-heart"></i>
+          </span>
+          <span>love</span>
+        </span>
+      </p>
+      <p>
+        Powered by
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-power-off"></i>
+          </span>
+          <span>zola</span>
+        </span>
+      </p>
+    </div>
+  </footer>
+  
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/galleria.min.js" integrity="sha384-QSfwGT8/EU536DKdtyP2D6SLlh8zBaZ0cVkwfrwhqzIU9VCfJT00CLVP5t+HAiYg" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/themes/folio/galleria.folio.min.js" integrity="sha384-DwpKI+deZB267+hPKwiOIc5Y2GKsVL0mR6hgz7GgIu7AgAMYqJwcJKY1YBNfhWcY" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@8.13.5/dist/mermaid.min.js" integrity="sha384-0yWn54pSGtfKCU+skfA69l25VsCw+MZt4LQov3xNRoS7YkAMrFokGgSBnAWSK4pv" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.xkcd@1.1.13/dist/chart.xkcd.min.js" integrity="sha384-xC3h1+IHXK8seA+8KfT79Z4e0GPsznjXBoMa5nd8ooWKplPyXx92NOmljWxLC/cs" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js" integrity="sha384-Pulw7+h73841BQIK0LzJCydKRPChJUF9w8h8W0o3h+cLtoyNPJS847bQauLWOTwg" crossorigin="anonymous"></script>
+  
+  <script src="https://xffxff.github.io/elasticlunr.min.js"></script>
+  <script src="https://xffxff.github.io/search_index.en.js"></script><script src="https://xffxff.github.io/js/site.js"></script>
+
+  
+
+
+
+
+
+  
+  
+</body>
+
+</html>
