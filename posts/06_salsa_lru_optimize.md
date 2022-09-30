@@ -79,8 +79,7 @@ fn lru_keeps_dependency_info() {
 
 我们现在调用 `get2(0)`（这里应该写 `input0` 会比较好，`input0 = MyInput::new(&mut db, 0)`，但为了简单就写了 0），
 能直接用 salsa 存储的结果吗？还需要重新计算吗？显然不用，不是存储有吗？那如果现在有别的输入改变了 salsa 的 `current_revision` 呢? 
-`db.salsa_runtime_mut().synthetic_write(salsa::Durability::HIGH)`
-就是在做这件事。也就是说 salsa 的 `current_revision` 大于 `get` 和 `get2` 结果被 verify 
+`synthetic_write(salsa::Durability::HIGH)` 就是在做这件事。也就是说 salsa 的 `current_revision` 大于 `get` 和 `get2` 结果被 verify 
 的 revision。这意味着 [shallow_verify_memo] 不能确定 `get2(0)` 的结果是否能用，得让 [deep_verify_memo]
 去进一步判断。`deep_verify_memo` 会检查 `get2(0)` 依赖的其他计算结果有没有改变，所以会去查看 `get(0)`，
 发现压根儿没有存储 `get(0)` 的结果，当然也没法判断它有没有改变，只能保守地认为发生了改变，所以 `get2(0)` 和
