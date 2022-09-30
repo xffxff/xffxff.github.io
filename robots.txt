@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://xffxff.github.io/sitemap.xml
