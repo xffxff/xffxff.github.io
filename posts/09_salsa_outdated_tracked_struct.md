@@ -70,15 +70,17 @@ fn tracked_fn(db: &Db, input: MyInput) -> MyTracked {
 结果吗？换句话说，我们需要重新计算吗？如果这个结果没有在最新的 [revision] 下被验
 证，我们就需要检查这个 query 的 inputs，如果所有的 inputs 在上次计算后都没有改
 变，就可以下结论之前存储的计算结果仍然是有效的。与此同时，我们还可以认为这个
-query 的outputs 在最新的 [revision] 下得到了验证，因为 Salsa 的一个基本假设就是
+query 的 outputs 在最新的 [revision] 下得到了验证，因为 Salsa 的一个基本假设就是
 所有的计算都是确定性的，inputs 不变，outputs 就应该不变。
 
 ## Panic if outdated
-对于 tracked struct 的 fields，一旦发现它 outdated，就应该 panic。如果保存的旧值
-的 `verified_at` 小于 `runtime.current_revision`，我们就说这个旧值 outdated。看
-看我们上面这个例子，改变 input 的时候，`runtime.current_revision` 就会 +1，大于
-`tracked.field(&db)` 查询到的值的 `verified_at`，所以应该 panic。（reference:
-<a>https://github.com/salsa-rs/salsa/issues/407#issuecomment-1244550905</a>）
+现在再次回到最开始的问题，对于 tracked struct 的 fields，一旦发现它过时了，就应
+该 panic。怎么判断它是否过时了呢？如果保存的旧值的 `verified_at` 小于系统的
+`current_revision`，我们就说这个值过时了（我们这里对“过时”的讨论是针对 tracked
+struct 的）。看看我们上面这个例子，改变 input 的时候，`current_revision` 就会
++1，大于 `tracked.field(&db)` 查询到的值的`verified_at`，所以应该
+panic。（reference:
+https://github.com/salsa-rs/salsa/issues/407#issuecomment-1244550905）
 
 看起来合理，但这样改之后，之前的测试有的通不过了。
 
@@ -101,17 +103,52 @@ fn main() {
     _ = tracked_fn(&db, input); // panic
 }
 ```
-第二次调用 `tracked_fn` 会 panic，但这段代码在 salsa 中绝对应该是合理的。第二次
-调用 `tracked_fn(&db, input)`，我们发现 db 中保存有之前的计算结果，但它可能是过
-时的，因为它对应的 `verified_at` 小于 `current_revision`。这时，我们需要 [deep
-verify]，检查这个 query 的所有 dependency 在 `verified_at` 之后有没有改变。（我
-们在 [这篇文章](./07_salsa_dependency.md) 讨论过 query 的 dependency）。对于
-`tracked_fn(&db, input)` 来说，一个 dependency 就是 `tracked.field(db)`，显然它
-的 `verified_at` 小于 `current_revision`，前面已经提到
+
+第二次调用 `tracked_fn` 会 panic，这里真的应该 panic 吗？对于整个系统来说，我们
+更改了部分输入，但并没有更改这里的 `input`，所以保存的 `tracked_fn(&db, input)`
+旧值仍然是有效的，这种情况正是我们希望 Salsa 帮我们节省的计算。
+
+这个例子的特殊之处在 `tracked`（准确来说应该是 `tracked.field`） 既是
+`tracked_fn(&db, input)` 的 input，又是它的output。
+
+第二次调用 `tracked_fn(&db, input)`，发现 db 中保存有之前的计算结果，但它可能是
+过时的，因为它对应的 `verified_at` 小于 `current_revision` （这里讨论的是tracked
+function，所以并不一定是过时的，和上面讨论的 tracked struct 不一样）。这时，我们
+需要 [deep verify]，检查这个 query 的所有 inputs 在其 `verified_at` 之后有没有改
+变。`tracked.field(db)` 就是它的一个 input，显然它的 `verified_at` 小于
+`current_revision`，前面已经提到
 
 > 对于 tracked struct 的 fields，一旦发现它 outdated，就应该 panic。如果保存的旧
-> 值的 `verified_at` 小于 `runtime.current_revision`，我们就说这个旧值
-> outdated。
+> 值的 `verified_at` 小于 `current_revision`，我们就说这个旧值outdated。
+
+```rust
+#[salsa::tracked]
+fn tracked_fn(db: &Db, input: MyInput) -> MyTracked {
+    MyTracked::new(db, input.field(db) * 2)
+}
+
+fn main() {
+    ...
+    let input = MyInput::new(&db, 11);
+    _ = tracked_fn(&db, input);
+
+    db.synthetic_write(salsa::Durabiliby::High);
+    let tracked = tracked_fn(&db, input);
+    dbg!(tracked.field(&db));
+}
+```
+
+如果改写成上面这样，就可以正常工作了。第二次调用 `tracked_fn(&db, input)` 发现保
+存的旧值是有效的，不用重新计算。在验证完这个 query 之后，我们认为这个它的所有
+outputs 也在`current_revision` 下得到了验证，也是有效的，即更新 outputs 的
+`verified_at` 为`current_revision`。所以接下来调用 `tracked.field(&db)` 时，它的
+`verified_at` 等于 `current_revision`，这个 field 的旧值也是有效的。
+
+如果一个 tracked struct 既是一个 query 的 input，又是其 output，在验证这个 query
+的**过程中**，我们还没来得及更新 outputs 的 `verified_at`（**必须在验证结束后才能更新
+其 outputs**)，就要将它作为input使用，这时它的 `verified_at` 小于
+`current_revision`，所以会 panic。
+
 
 [deep verify]: https://github.com/salsa-rs/salsa/blob/2ffe4a78a824acb8c73e77497e4c2c469fcbed37/components/salsa-2022/src/function/maybe_changed_after.rs#L145
 
