@@ -1,6 +1,6 @@
 ---
 title: "Salsa: The red-green Algorithm"
-date: "2022-12-2"
+date: "2022-12-02"
 ---
 
 
@@ -10,7 +10,7 @@ fn func(input: Input) -> Output {
 }
 ```
 
-当 `input` 不变的时候，我们第二次调用 `func` 的时候，我们可以直接从缓存中读取结果，而不需要再次执行 `func`。
+当 `input` 不变的时候，我们第二次调用 `func` ，可以直接从缓存中读取结果，而不需要再次执行 `func`。
 
 ```rust
 ...
@@ -23,13 +23,13 @@ assert output1 == output2
 
 实现增量计算，本质上是因为我们保存了之前的计算结果，如果对于每一个不同的 `input`，我们都保存了之前的计算结果，存储的压力会很大。
 
-![](../public//10/input-output.png)
+![](/10/input-output.png)
 
 在这种模式下，我们不知道哪些 `input` 是过期的，这些 input 除了创建时间不一样，并没有什么不同。当然，我们可以使用一些缓存替换策略（cache replacement policy）来缓解这个问题，但是我们仍然存储了多余的东西，且可能剔除了一些仍然有用的数据。
 
-![](../public/10/input-version.png)
+![](/10/input-version.png)
 
-如果我们 input 分组呢？我们可以为每一个 `input` 分配一个版本号，当 `input` 发生变化的时候，我们就更新版本号。这样，我们就可以知道哪些 `input` 是过期的了。
+如果我们给 input 分组呢？我们可以为每一个 `input` 分配一个版本号，当 `input` 发生变化的时候，我们就更新版本号。这样，我们就可以知道哪些 `input` 是过期的了。
 
 对于之前的模式，我们的代码可能是这样的：
 
