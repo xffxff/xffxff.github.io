@@ -1,5 +1,5 @@
 ---
-title: "Salsa: The red-green Algorithm"
+title: "WIP: Salsa: The red-green Algorithm"
 date: "2022-12-02"
 ---
 

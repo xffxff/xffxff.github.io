@@ -30,8 +30,12 @@ export function getSortedPostsData() {
       ...(matterResult.data as { date: string; title: string })
     }
   })
+
+  // Filter out posts whose title starts with "WIP"
+  const filteredPostsData = allPostsData.filter(post => !post.title.startsWith('WIP'))
+
   // Sort posts by date
-  return allPostsData.sort((a, b) => {
+  return filteredPostsData.sort((a, b) => {
     if (a.date < b.date) {
       return 1
     } else {

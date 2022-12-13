@@ -1,5 +1,5 @@
 ---
-title: "(WIP) Salsa: Is the tracked struct valid?"
+title: "WIP: Salsa: Is the tracked struct valid?"
 date: "2022-09-26"
 ---
 
