@@ -62,8 +62,6 @@ export async function getPostData(id: string) {
   // Use gray-matter to parse the post metadata section
   const matterResult = matter(fileContents)
 
-  const processText = matterResult.content.replace(/(\p{Script=Hani})\s+(?=\p{Script=Hani})/gu, '$1');
-
   // Use remark to convert markdown into HTML string
   const processedContent = await remark()
     .use(remarkParse)
@@ -71,8 +69,10 @@ export async function getPostData(id: string) {
     .use(remarkRehype)
     .use(rehypeHighlight)
     .use(rehypeStringify)
-    .process(processText)
-  const contentHtml = processedContent.toString()
+    .process(matterResult.content)
+
+  // Remove the space between two chinese charators
+  const contentHtml = processedContent.toString().replace(/(\p{Script=Hani})\s+(?=\p{Script=Hani})/gu, '$1');
 
   // Combine the data with the id and contentHtml
   return {
