@@ -63,6 +63,7 @@ foo。第一反应是，当编译器 resolve 这个 import 的时候，先去把
 了，完事儿后在跑回来 resolve 这个 import 的。听起来很合理，但考虑下面这个情形
 呢？
 
+```rust
 mod a {
     use crate::b::foo;
 
@@ -73,7 +74,10 @@ mod b {
     use crate::a::bar;
 
     pub fn foo() {}
-}在 mod a 中 import mod b，mod b 中又 import 了 mod a。编译器 name resolution 的
+}
+```
+
+在 mod a 中 import mod b，mod b 中又 import 了 mod a。编译器 name resolution 的
 过程是 a-->b-->a-->b-->......，会进入一个死循环。
 
 怎么解决这个问题呢？碰到 import，可以先跳过。第一遍尽可能的去 resolve，如果
