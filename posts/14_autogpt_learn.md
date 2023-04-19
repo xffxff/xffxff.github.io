@@ -1,5 +1,5 @@
 ---
-title: "从 AutoGPT 学习如何发挥 GPT 的潜力"
+title: "向 AutoGPT 学习如何发挥 GPT 的潜力"
 date: "2023-04-19"
 ---
 
