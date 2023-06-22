@@ -88,6 +88,12 @@ ul {
   list-style-type: disc;
 }
 
+ol {
+  margin: 0.5rem 0;
+  padding: 0 0 0 1.5rem;
+  list-style-type: decimal;
+}
+
 li {
   display: list-item;
   text-align: -webkit-match-parent;
