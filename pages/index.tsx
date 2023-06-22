@@ -19,21 +19,23 @@ export default function Home({
       <Head>
         <title>{siteTitle}</title>
       </Head>
-      <section className="text-xl leading-normal pt-1">
-        <h2 className="text-2xl leading-normal my-4">日拱一卒</h2>
-        <ul>
-          {allPostsData.map(({ id, date, title }) => (
-            <li className="mb-5" key={id}>
-              <Link href={`/posts/${id}`}>
-                {title}
-              </Link>
-              <br />
-              <small className="text-gray-500">
-                <Date dateString={date} />
-              </small>
-            </li>
-          ))}
-        </ul>
+      <section className="text-xl leading-normal pt-1 flex flex-col items-center">
+        <div>
+          <h2 className="text-2xl leading-normal my-4">日拱一卒</h2>
+          <ul>
+            {allPostsData.map(({ id, date, title }) => (
+              <li className="mb-5" key={id}>
+                <Link href={`/posts/${id}`}>
+                  {title}
+                </Link>
+                <br />
+                <small className="text-gray-500">
+                  <Date dateString={date} />
+                </small>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
     </Layout>
   )
