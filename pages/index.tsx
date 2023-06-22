@@ -21,11 +21,11 @@ export default function Home({
       </Head>
       <section className="text-xl leading-normal pt-1 flex flex-col items-center">
         <div>
-          <h2 className="text-2xl leading-normal my-4">日拱一卒</h2>
+          <h2 className="text-2xl leading-normal my-4 font-bold tracking-wider">日拱一卒</h2>
           <ul>
             {allPostsData.map(({ id, date, title }) => (
               <li className="mb-5" key={id}>
-                <Link href={`/posts/${id}`}>
+                <Link href={`/posts/${id}`} className="text-blue-500">
                   {title}
                 </Link>
                 <br />
