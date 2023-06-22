@@ -243,8 +243,9 @@ Error: experiment error: could not run experiment
 
 和 anyhow 相比，error_stack 需要我们编写更多的代码，但是 error_stack 提供的错误信息更加友好，给我们展示了每一个层级的错误信息，上下文信息以及错误发生的具体位置。
 
+----
 
-总结一下，anyhow 和 error_stack 都是非常优秀的 error handling crate，它们都提供了友好的错误信息，可以帮助我们快速定位错误。anyhow 的优势在于它的使用非常简单，几乎不需要我们编写额外的代码。error_stack 的优势在于它的错误信息更加友好，更友好地展示错误发生的位置以及错误的上下文信息，但是它的使用比较复杂，需要我们编写额外的代码。
+总结一下，anyhow 和 error_stack 都是非常优秀的 error handling crate，都提供了友好的错误信息，可以帮助我们快速定位错误。anyhow 的优势在于它的使用非常简单，几乎不需要我们编写额外的代码。error_stack 的优势在于它的错误信息更加友好，更直观地展示了错误发生地位置，但是它的使用相对复杂一点。
 
 
 
