@@ -11,11 +11,18 @@ a:hover {
   text-decoration: underline;
 }
 
-code {
+p > code {
   background-color: rgba(217, 221, 224, 0.469);
   border-radius: 6px;
   padding: .2em .4em;
   margin: 0;
+}
+
+pre > code {
+  display: block;
+  overflow-x: auto;
+  padding: 1em;
+  background: #f6f8fa;
 }
 
 .hljs {
@@ -67,4 +74,25 @@ blockquote {
   margin-right: 0;
   margin-top: 1rem;
   margin-bottom: 1rem;
+}
+
+ul {
+  margin: 0.5rem 0;
+  padding: 0 0 0 1.5rem;
+  list-style-type: disc;
+}
+
+li {
+  display: list-item;
+  text-align: -webkit-match-parent;
+}
+
+li ul {
+  margin: 0;
+  padding: 0 0 0 1.5rem;
+  list-style-type: circle;
+}
+
+* {
+  letter-spacing: 0.025em;
 }

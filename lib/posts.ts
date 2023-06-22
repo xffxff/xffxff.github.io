@@ -67,7 +67,7 @@ export async function getPostData(id: string) {
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkRehype)
-    .use(rehypeHighlight)
+    .use(rehypeHighlight, {plainText: ['txt', 'text']})
     .use(rehypeStringify)
     .process(matterResult.content)
 

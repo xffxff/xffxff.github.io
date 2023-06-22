@@ -11,7 +11,7 @@ AutoGPT 的 prompt [包含多条 message](https://github.com/Significant-Gravita
 这里主要看看其中一条，也是最主要的
 
 ```
-'You are Tennis-GPT, An AI for creating tennis training plan
+You are Tennis-GPT, An AI for creating tennis training plan
 Your decisions must always be made independently without seeking user assistance. Play to your strengths as an LLM and pursue simple strategies with no legal complications.
 
 GOALS:
@@ -78,7 +78,7 @@ Response Format:
         }
     }
 }
-Ensure the response can be parsed by Python json.loads'
+Ensure the response can be parsed by Python json.loads
 ```
 
 > 上述 prompt 中关于 tennis 的部分是可变的，是我输入给它的
