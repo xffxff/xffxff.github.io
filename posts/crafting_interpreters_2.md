@@ -3,7 +3,7 @@ title: "《Crafting Interpreters》阅读笔记（二）"
 date: "2021-10-17"
 ---
 
-[《Crafting Interpreters》](https://link.zhihu.com/?target=http%3A//www.craftinginterpreters.com/)中 jlox（Part I 中用 java 实现的 Lox 语言）用了 recursive descent parsing 去实现 parser。为了偷懒，下面用 RD 代指 recursive descent parsing 这个方法。
+[《Crafting Interpreters》](http://www.craftinginterpreters.com/)中 jlox（Part I 中用 java 实现的 Lox 语言）用了 recursive descent parsing 去实现 parser。为了偷懒，下面用 RD 代指 recursive descent parsing 这个方法。
 
 ## 设计简易计算器
 

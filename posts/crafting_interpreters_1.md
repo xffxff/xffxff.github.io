@@ -4,7 +4,7 @@ date: "2021-10-15"
 ---
 
 
-最近在看 [《Crafting Interpreters》](https://link.zhihu.com/?target=http%3A//www.craftinginterpreters.com/)，想知道编程语言到底是怎么实现的，也希望借此加深对其他语言的理解。这个系列算是这本书的阅读笔记，我希望这不是对书上内容的摘抄或者转述，而是融入更多自己的思考。原书中有很多代码片段，跟着敲就能完成语言的实现，跟原书不同的是，我不希望在文章中出现代码，不关心代码实现的细节，更关注为什么要这么实现，从 high level 的角度看怎么实现。
+最近在看 [《Crafting Interpreters》](http://www.craftinginterpreters.com/)，想知道编程语言到底是怎么实现的，也希望借此加深对其他语言的理解。这个系列算是这本书的阅读笔记，我希望这不是对书上内容的摘抄或者转述，而是融入更多自己的思考。原书中有很多代码片段，跟着敲就能完成语言的实现，跟原书不同的是，我不希望在文章中出现代码，不关心代码实现的细节，更关注为什么要这么实现，从 high level 的角度看怎么实现。
 
 这本书实现的编成语言叫 Lox，全书分为两部分，Part I 是用 java 实现一个 Tree-walk interpreter，parser 生成 AST（Abstruct Syntax Tree）后，通过遍历 AST 的方式去 interpret；Part 2是用 C 实现的，parser 不再生成 AST，而是 bytecode，通过 VM（Virtual Machine）去 interpret。我们用 clox 指代用 C 语言实现的 Lox，我主要关心 clox 的实现，这篇文章以及可能会有的接下来的文章都是关于 clox 的。
 

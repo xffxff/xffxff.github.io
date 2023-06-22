@@ -12,12 +12,12 @@ a:hover {
   text-decoration: underline;
 }
 
-p > code {
+/* p > code {
   background-color: rgba(217, 221, 224, 0.469);
   border-radius: 6px;
   padding: .2em .4em;
   margin: 0;
-}
+} */
 
 pre > code {
   display: block;
