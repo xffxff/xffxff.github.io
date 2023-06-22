@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* all of the following is for the markdown content of the posts */
 a {
   color: #3B82F6;
   text-decoration: none;
