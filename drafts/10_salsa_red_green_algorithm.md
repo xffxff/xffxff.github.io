@@ -1,6 +1,6 @@
 ---
-title: "Salsa 和 functools.cache 有什么不同？"
-date: "2022-12-15"
+title: 'Salsa 和 functools.cache 有什么不同？'
+date: '2022-12-15'
 ---
 
 我第一次听说 Salsa，第一次听说增量计算（incremental computation）的时候，就有一个疑问：这和 Python 中的 [`functools.cache`](https://docs.python.org/3/library/functools.html#functools.cache) 有什么区别？
@@ -21,7 +21,7 @@ fn main() {
 
 输入同样的 `input`，第二次调用 `func` 时，可以直接从缓存中读取结果，而不需要再次执行 `func`。对于每一个不同的 `input`，保存之前的计算结果，下次调用时先查找数据库，没有找到才执行计算，Python 中的 `functools.cache` 就是这么做的。当然，还可以使用一些缓存替换策略，比如 LRU， Python 中 [`functools.lru_cache`](https://docs.python.org/3/library/functools.html#functools.lru_cache) 就是这么做的。
 
-Salsa 是这么做的吗？显然不是。至少 Salsa 使用起来要比 `functools.cache` 复杂得多 ^_^。
+Salsa 是这么做的吗？显然不是。至少 Salsa 使用起来要比 `functools.cache` 复杂得多 ^\_^。
 
 我能明显感觉到，Salsa 和 `functools.cache` 是有很大区别的，但这个区别到底是什么，我好像又说不清楚。。。我好像有点思路，我尝试捋一捋
 
@@ -36,8 +36,9 @@ fn main() {
     }
 }
 ```
+
 > You start out with an input that has some value. You invoke your program to get back a result. Some time later, you modify the input and invoke your program again. Our goal is to make this second call faster by re-using some of the results from the first call.  
--- https://salsa-rs.netlify.app/overview.html#goal-of-salsa
+> -- https://salsa-rs.netlify.app/overview.html#goal-of-salsa
 
 一个重要的点是，我们是在 loop 之中不断修改 `input`。如果换做 `functools.cache`，它解决的问题应该是
 

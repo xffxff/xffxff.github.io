@@ -1,24 +1,26 @@
 ---
-title: "Salsa: tracked methods"
-date: "2022-09-04"
+title: 'Salsa: tracked methods'
+date: '2022-09-04'
 ---
-
 
 PR [392](https://github.com/salsa-rs/salsa/pull/392) supports tracked methods, I reviewed it and thought there were some notes to make, I tried to making it an RFC, although the pr was not created by me.
 
 <!-- more -->
 
-
 ## Metadata
-* introduced in: [https://github.com/salsa-rs/salsa/pull/392](https://github.com/salsa-rs/salsa/pull/392)
+
+- introduced in: [https://github.com/salsa-rs/salsa/pull/392](https://github.com/salsa-rs/salsa/pull/392)
 
 ## Summary
+
 Support tracked methods
 
 ## Motivation
+
 In the Salsa 2022 system, tracked functions are almost always defined on some kind of salsa struct, it would be nice if we support tracked methods.
 
 ## User's guide
+
 Impl blocks with `#[salsa::tracked]` and then create tracked methods by marking individual methods with `#[salsa::tracked]`. We will get an error if we annotate a method with `#[salsa::tracked]` but forget to mark the impl block.
 
 ```rust
@@ -60,7 +62,9 @@ impl TrackedTrait for MyInput {
 ```
 
 ## Reference Guide
-For 
+
+For
+
 ```rust
 #[salsa::tracked(jar = Jar)]
 impl MyInput {
@@ -70,7 +74,9 @@ impl MyInput {
     }
 }
 ```
-We treat it as  
+
+We treat it as
+
 ```rust
 #[salsa::tracked(jar = Jar)]
 MyInput_tracked_fn(db: &dyn Db, __salsa_self: MyINput) -> u32 {
@@ -79,6 +85,7 @@ MyInput_tracked_fn(db: &dyn Db, __salsa_self: MyINput) -> u32 {
 ```
 
 So what we generate is the code generated for the tracked function `MyInput_tracked_fn` and the impl block looks like
+
 ```rust
 impl MyInput {
     fn tracked_fn(self, db: &dyn Db) -> u32 {
@@ -103,5 +110,3 @@ if let syn::FnArg::Receiver(receiver) = &item_fn.sig.inputs[0] {
     ));
 }
 ```
-
-

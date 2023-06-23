@@ -1,6 +1,6 @@
 ---
-title: "如何实现一个Rust Language Server?"
-date: "2021-10-30"
+title: '如何实现一个Rust Language Server?'
+date: '2021-10-30'
 ---
 
 标题听起来像是一个教程，但它真的只是一个问题，是我问自己的一个问题，这篇文章记录
@@ -114,7 +114,7 @@ fn main() {
 
 假设上述代码的 AST 如下
 
-![](/13/ast.png)  
+![](/13/ast.png)
 
 AST 已经有足够的信息去做 struct 的自动补全，遍历 AST 可以知道 foo 是一个 Struct
 Foo，再遍历 AST 可以知道 Foo 有哪些 field，哪些 method。最终给出自动补全的建议
@@ -162,8 +162,8 @@ struct Struct {
 }
 
 impl Struct {
-    fn fields(&self) -> impl Iterator<Item = Field> {} 
-    fn first_field(&self) -> Field {} 
+    fn fields(&self) -> impl Iterator<Item = Field> {}
+    fn first_field(&self) -> Field {}
     fn methods(&self) -> impl Iterator<Item = Method> {}
     fn first_method(&self) -> Method {}
     ...

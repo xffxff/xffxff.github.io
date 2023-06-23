@@ -1,6 +1,6 @@
 ---
-title: "anyhow vs error_stack: 从用户的角度来看错误处理"
-date: "2023-06-19"
+title: 'anyhow vs error_stack: 从用户的角度来看错误处理'
+date: '2023-06-19'
 ---
 
 本文围绕一个例子，以用户的角度来讨论 [anyhow](https://docs.rs/anyhow/latest/anyhow/), [error_stack](https://docs.rs/error-stack/latest/error_stack/) 解决了什么样的需求，能否给错误处理带来便利。
@@ -8,6 +8,7 @@ date: "2023-06-19"
 > 本文的例子改编自 [error_stack README.md](https://github.com/hashintel/hash/blob/main/libs/error-stack/README.md)
 
 ## `Box<dyn std::error::Error>`
+
 在讨论 anyhow 和 error_stack 之前，我们先来看看我们的 baseline：用 `Box<dyn std::error::Error>` 来处理错误。
 
 这是最粗暴的错误处理方式，所有的错误都被转换成了 `Box<dyn std::error::Error>`。
@@ -54,6 +55,7 @@ fn main() -> Result<(), BoxDynError> {
 ```
 
 运行这段代码，会得到如下的错误信息：
+
 ```text
 Error: ParseIntError { kind: InvalidDigit }
 ```
@@ -106,11 +108,13 @@ fn main() -> Result<(), anyhow::Error> {
     Ok(())
 }
 ```
+
 > **注意**：上述 diff 中并没有展示所有的改动，比如有些 `Box<dyn std::error::Error>` 的改动，以及 `?` 的改动。
 
 除了将 `Box<dyn std::error::Error>` 替换成 `anyhow::Error` 之外，我们还使用了 `anyhow::Context` 来为错误添加上下文信息。
 
 运行这段代码，会得到如下的错误信息：
+
 ```text
 Error: unable to set up experiments
 
@@ -119,6 +123,7 @@ Caused by:
     1: "3o" could not be parsed as experiment
     2: invalid digit found in string
 ```
+
 这里的错误信息多是通过 `context` 添加的上下文信息，可以看到，我们已经能够快速定位到错误的原因了： `3o` 不能被解析成数字。
 
 但我们现在不能快速定位到错误发生的具体位置，这需要 backtrace 信息。anyhow 能提供 backtrace 吗？当然可以，我们只需要在运行程序的时候，设置环境变量 `RUST_BACKTRACE=1` 即可。
@@ -148,7 +153,8 @@ Stack backtrace:
              at /rustc/90c541806f23a127002de5b4038be731ba1458ca/library/core/src/iter/adapters/mod.rs:195:9
 ...
 ```
-> **注意**：如果用的是 stable 版本的 rust，需要对 anyhow 添加 "backtrace" feature，才能使用 backtrace 功能。   
+
+> **注意**：如果用的是 stable 版本的 rust，需要对 anyhow 添加 "backtrace" feature，才能使用 backtrace 功能。
 
 虽然 anyhow 能够提供 backtrace 信息，但是这个 backtrace 信息并不是很友好，包含了太多冗余信息（比如 rust core lib 的 backtrace）。这一点，我们可以通过 error_stack 来改进。
 
@@ -224,9 +230,11 @@ fn main() -> Result<(), ExperimentError> {
     Ok(())
 }
 ```
+
 > **注意**：以上并不是严格的 diff，只是展示了主要的改动。
 
 运行这段代码，会得到如下的错误信息：
+
 ```text
 Error: experiment error: could not run experiment
 ├╴at src/bin/error_stack.rs:51:18
@@ -243,11 +251,6 @@ Error: experiment error: could not run experiment
 
 和 anyhow 相比，error_stack 需要我们编写更多的代码，但是 error_stack 提供的错误信息更加友好，给我们展示了每一个层级的错误信息，上下文信息以及错误发生的具体位置。
 
-----
+---
 
 总结一下，anyhow 和 error_stack 都是非常优秀的 error handling crate，都提供了友好的错误信息，可以帮助我们快速定位错误。anyhow 的优势在于它的使用非常简单，几乎不需要我们编写额外的代码。error_stack 的优势在于它的错误信息更加友好，更直观地展示了错误发生地位置，但是它的使用相对复杂一点。
-
-
-
-
-

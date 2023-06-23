@@ -1,32 +1,34 @@
 ---
-title: "封装我最常用的 3 个 kubectl 命令"
-date: "2022-08-17"
+title: '封装我最常用的 3 个 kubectl 命令'
+date: '2022-08-17'
 ---
 
-这篇文章介绍了我最常用的 3 个 `kubectl` 命令，以及如何使用 bash 脚本将它们封装成我喜欢的样子。  
+这篇文章介绍了我最常用的 3 个 `kubectl` 命令，以及如何使用 bash 脚本将它们封装成我喜欢的样子。
 
 <!-- more -->
 
+最近开始用 `kubectl`，发现有几个命令高频出现，下面来看一下这几个命令。
 
-最近开始用 `kubectl`，发现有几个命令高频出现，下面来看一下这几个命令。  
+1. 查询 pod 的运行状态
 
-1. 查询 pod 的运行状态  
 ```sh
 kubectl get pods -n NAMESPACE | grep NAME_PATTERN
 ```
 
 2. 查询某个 pod 的日志
+
 ```sh
-kubectl get pods -n NAMESPACE | grep xxx | awk '{print $1}' | xargs kubectl logs -n NAMESPACE 
+kubectl get pods -n NAMESPACE | grep xxx | awk '{print $1}' | xargs kubectl logs -n NAMESPACE
 ```
 
 3. 登录到某个 pod
+
 ```sh
-kubectl get pods -n NAMESPACE | grep xxx | awk '{print $1}' | xargs -I {} kubectl exec -n NAMESPACE -it {} /bin/bash 
+kubectl get pods -n NAMESPACE | grep xxx | awk '{print $1}' | xargs -I {} kubectl exec -n NAMESPACE -it {} /bin/bash
 ```
 
 每次都要敲这么多字符才能达成我们想要的结果，基本都是重复的东西，很容易想到我们可以把这几个命令写成 bash 脚本，假设这个脚本叫 `kubeutil`，
-预期的接口是  
+预期的接口是
 
 ```sh
 # 获取名字中包含 “xxx” 的 pod 的运行状态
@@ -39,7 +41,7 @@ kubeutil log xxx
 kubeutil exec xxx
 ```
 
-`kubeutil log` 和 `kubeutil exec` 这两个脚本在逻辑上有个明显的漏洞，我们用 `grep xxx` 去匹配 pod 名字中包含 "xxx" 的 pod，如果有不止一个 pod 满足匹配要求呢？应该获取哪个 pod 的日志呢？登录进哪个 pod 呢？  
+`kubeutil log` 和 `kubeutil exec` 这两个脚本在逻辑上有个明显的漏洞，我们用 `grep xxx` 去匹配 pod 名字中包含 "xxx" 的 pod，如果有不止一个 pod 满足匹配要求呢？应该获取哪个 pod 的日志呢？登录进哪个 pod 呢？
 
 我们需要使 `grep xxx` 只匹配唯一一个 pod，那就得下更多的功夫在 `xxx` 上，得找到合适的匹配规则。实际上这让我很头疼，我总是需要先用 `kubeutil get xxx` 去匹配到一些 pod，查看这些 pod 的名字，然后去修改 `xxx`。
 
@@ -55,9 +57,9 @@ kubeutil exec foo-bf
 # it worked!
 ```
 
-我们能做的更好吗？  
+我们能做的更好吗？
 
-我们可以将 `kubeutil` 做成交互式的  
+我们可以将 `kubeutil` 做成交互式的
 
 ```sh
 $ kubeutil exec foo                   # 运行指令，输出匹配到的 pod，并附上 index，让用户选择要登录到哪个 pod
@@ -66,7 +68,7 @@ $ kubeutil exec foo                   # 运行指令，输出匹配到的 pod，
 Enter the index of pod that you want to select > 1  # 用户输入 1，表示选择登录到 `foo-7cd5bdd6cc-8n6vd`
 ```
 
-完整代码  
+完整代码
 
 ```bash
 #!/bin/bash
@@ -125,5 +127,3 @@ case $1 in
     ;;
 esac
 ```
-
-

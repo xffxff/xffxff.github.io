@@ -4,7 +4,7 @@
 
 /* all of the following is for the markdown content of the posts */
 a {
-  color: #3B82F6;
+  color: #3b82f6;
   text-decoration: none;
   overflow-wrap: break-word;
 }
@@ -62,7 +62,6 @@ h3 code,
 h4 code {
   background-color: transparent;
 }
-
 
 p {
   margin: 1rem 0;

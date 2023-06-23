@@ -1,15 +1,15 @@
 ---
-title: "Rust Analyzer: 为什么要跑 cargo check"
-date: "2022-06-04"
+title: 'Rust Analyzer: 为什么要跑 cargo check'
+date: '2022-06-04'
 ---
 
 为什么每次编辑的时候（严格来说是保存文本的时候），RA 都要跑一遍 `cargo check` ？记得有朋友抱怨说跑 `cargo check` 时 ide 很卡，编辑体验很不好，总不能做一件吃力不讨好的事情吧。
 
-![](/11/status_bar.png) 
+![](/11/status_bar.png)
 
 原因就是 `cargo check` 的报错信息对 RA 非常有用，这些报错信息是 RA diagnostics 的重要部分。
 
-![](/11/vscode.png)  
+![](/11/vscode.png)
 
 图中代码 `main` 函数少了 } ， RA 提示我们有一些错误，其中 `this file contains an unclosed delimiter` 和 `main.rs(1, 11) unclosed delimiter 是 cargo check` 给出的，`Syntax Error: expected R_CURLY` 是 RA 给出的。
 

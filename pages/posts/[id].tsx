@@ -5,7 +5,7 @@ import Date from '../../components/date'
 import { GetStaticProps, GetStaticPaths } from 'next'
 
 export default function Post({
-  postData
+  postData,
 }: {
   postData: {
     title: string
@@ -19,7 +19,9 @@ export default function Post({
         <title>{postData.title}</title>
       </Head>
       <article>
-        <h1 className="text-3xl font-medium my-4 border-b-0">{postData.title}</h1>
+        <h1 className="text-3xl font-medium my-4 border-b-0">
+          {postData.title}
+        </h1>
         <div className="text-gray-500 mb-8 pb-2 border-b-2 border-solid border-slate-300">
           <Date dateString={postData.date} />
         </div>
@@ -33,7 +35,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
   const paths = getAllPostIds()
   return {
     paths,
-    fallback: false
+    fallback: false,
   }
 }
 
@@ -41,7 +43,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const postData = await getPostData(params.id as string)
   return {
     props: {
-      postData
-    }
+      postData,
+    },
   }
 }

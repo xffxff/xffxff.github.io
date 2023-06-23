@@ -6,7 +6,7 @@ import Date from '../components/date'
 import { GetStaticProps } from 'next'
 
 export default function Home({
-  allPostsData
+  allPostsData,
 }: {
   allPostsData: {
     date: string
@@ -21,7 +21,9 @@ export default function Home({
       </Head>
       <section className="text-xl leading-normal pt-1 flex flex-col items-center">
         <div>
-          <h2 className="text-2xl leading-normal my-4 font-bold tracking-wider">日拱一卒</h2>
+          <h2 className="text-2xl leading-normal my-4 font-bold tracking-wider">
+            日拱一卒
+          </h2>
           <ul className="m-0 p-0">
             {allPostsData.map(({ id, date, title }) => (
               <li className="mb-5 list-none p-0" key={id}>
@@ -45,7 +47,7 @@ export const getStaticProps: GetStaticProps = async () => {
   const allPostsData = getSortedPostsData()
   return {
     props: {
-      allPostsData
-    }
+      allPostsData,
+    },
   }
 }

@@ -1,14 +1,14 @@
 ---
-title: "《Crafting Interpreters》阅读笔记（三）"
-date: "2021-10-24"
+title: '《Crafting Interpreters》阅读笔记（三）'
+date: '2021-10-24'
 ---
 
-[《Crafting Interpreters》](http://www.craftinginterpreters.com/)中 clox（Part 2中用 C 实现的 Lox 语言）实现了 [Pratt Parser](http://www.craftinginterpreters.com/compiling-expressions.html#a-pratt-parser)。[上一篇文章](crafting_interpreters_2)讲了 RD（Recursive Descent Parsing），个人感觉 Pratt Parsing 也是属于 RD 的，是 RD 的一个改进。
+[《Crafting Interpreters》](http://www.craftinginterpreters.com/)中 clox（Part 2 中用 C 实现的 Lox 语言）实现了 [Pratt Parser](http://www.craftinginterpreters.com/compiling-expressions.html#a-pratt-parser)。[上一篇文章](crafting_interpreters_2)讲了 RD（Recursive Descent Parsing），个人感觉 Pratt Parsing 也是属于 RD 的，是 RD 的一个改进。
 
 上篇文章中提到了 parsing 要解决的两个问题
 
-* 不同运算符的优先级，比如 `*` 比 `+` 的优先级高，`1 + 2 * 3` 应该被 parse 为 `1 + (2 * 3)`
-* Associativity，比如 `+` 是 left-associative 的， `1 + 2 + 3` 应该被 parse 为 `(1 + 2) + 3`，而赋值 `=` 是 right-associative 的，`a = b = c` 应该被 parse 为 `a = (b = c)`。
+- 不同运算符的优先级，比如 `*` 比 `+` 的优先级高，`1 + 2 * 3` 应该被 parse 为 `1 + (2 * 3)`
+- Associativity，比如 `+` 是 left-associative 的， `1 + 2 + 3` 应该被 parse 为 `(1 + 2) + 3`，而赋值 `=` 是 right-associative 的，`a = b = c` 应该被 parse 为 `a = (b = c)`。
 
 RD 中每个优先级都在语法规则中占一个 level，对应到代码中，每个优先级都会对应一个单独的函数，优先级低的函数先被调用，每个函数都会调用比自己优先级更高一级的函数，通过这种方式解决不同运算符的优先级问题。至于 Associativity，是通过是否在函数中递归调用自身解决的。
 

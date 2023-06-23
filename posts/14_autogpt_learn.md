@@ -1,11 +1,12 @@
 ---
-title: "向 AutoGPT 学习如何发挥 GPT 的潜力"
-date: "2023-04-19"
+title: '向 AutoGPT 学习如何发挥 GPT 的潜力'
+date: '2023-04-19'
 ---
 
 项目地址：https://github.com/Significant-Gravitas/Auto-GPT
 
 ## Prompt 构造
+
 AutoGPT 的 prompt [包含多条 message](https://github.com/Significant-Gravitas/Auto-GPT/blob/fdd79223b0c6132e1d7fc5127e9ca02fabaea9e5/autogpt/chat.py#L27-L49)
 
 这里主要看看其中一条，也是最主要的
@@ -105,14 +106,18 @@ Response Format:
 }
 Ensure the response can be parsed by Python json.loads'
 ```
+
 我之前的做法是让 GPT 生成纯文本，然后用正则去匹配，除了正则匹配麻烦之外，生成纯文本并不一定会完全按照预期的格式，比如如下 prompt
+
 ```
 You should only respond as described below
 options:
     1. option 1
     2. option 2
 ```
+
 GPT 可能会自由发挥一下，生成
+
 ```
 your options are:
     1. option 1
@@ -122,6 +127,7 @@ your options are:
 Prompt 中其他 trick 还待我继续探索。
 
 ## 记忆
+
 为什么需要记忆，和 GPT 多轮对话时，把所有聊天历史都输入给 GPT，token 数量不够，所以希望把历史会话存储下来，下次和 GPT 对话时，冲历史对话（记忆）中找到相关的内容，然后把相关的内容输入给 GPT，这样 GPT 就可以更好的理解当前的对话。
 
 主要看看 [LocalCache](https://github.com/Significant-Gravitas/Auto-GPT/blob/fdd79223b0c6132e1d7fc5127e9ca02fabaea9e5/autogpt/memory/local.py#L29) 中 [add](https://github.com/Significant-Gravitas/Auto-GPT/blob/fdd79223b0c6132e1d7fc5127e9ca02fabaea9e5/autogpt/memory/local.py#L62) 和 [get_relevant](https://github.com/Significant-Gravitas/Auto-GPT/blob/fdd79223b0c6132e1d7fc5127e9ca02fabaea9e5/autogpt/memory/local.py#L113) 的实现

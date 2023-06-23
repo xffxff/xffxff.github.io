@@ -1,6 +1,6 @@
 ---
-title: "rustc 如何做 name resolution"
-date: "2021-11-06"
+title: 'rustc 如何做 name resolution'
+date: '2021-11-06'
 ---
 
 先吐槽一下，原本前两天 [rustc reading
@@ -8,13 +8,14 @@ club](https://rust-lang.github.io/rustc-reading-club/meetings/2021-11-04.html)
 有个关于 name resolution 源码阅读的直播，但直播时发现 zoom 最多只能容纳 100 人，主
 讲人进不来了。他们也没有想到会有这么多人，最终是取消了这次活动。
 
-虽然活动没了，但 rustc 还是要学的。这不是一篇源码阅读，全文不涉及任何  rustc 的
+虽然活动没了，但 rustc 还是要学的。这不是一篇源码阅读，全文不涉及任何 rustc 的
 代码，因为我压根儿没怎么看
 [rustc_resolve](https://github.com/rust-lang/rust/tree/master/compiler/rustc_resolve/src)
 的代码，倒是看了一些 rust-analyzer 中 name resolution 的代码。这几天看 rust 开发
 文档，RFC 以及 rust-analyzer，本文是对 name resolution 的一个总结。
 
 ## 什么是 name resolution?
+
 在编译时，将 name 和 definition 匹配的过程。比如说下面这个例子，我们在 bar 这个
 函数中使用 foo 的时候 ，需要知道 foo 指代的是第一行 foo 函数。
 
@@ -25,6 +26,7 @@ fn bar() { foo(); }
 ```
 
 ## Namespace
+
 怎么实现 name resolution 呢？能否定义一个 map，key 是 name，value 是 definition
 呢？现在的一个关键点是在同一 scope 下，name 是唯一的吗？很遗憾，在 rust 中，并不
 是
@@ -35,14 +37,15 @@ fn foo() { ... }
 struct foo { field: u32 }
 ```
 
-上述代码是合法的，可以同时有一个叫 foo 的函数，还有一个叫 foo 的 struct。函数foo
-和 struct foo 并不在同一 namespace 下，函数 foo 属于 value namespace，而struct
-foo 属于 type namespace。除了 type 和 value namespace 之外，还有macro、lifetime
+上述代码是合法的，可以同时有一个叫 foo 的函数，还有一个叫 foo 的 struct。函数 foo
+和 struct foo 并不在同一 namespace 下，函数 foo 属于 value namespace，而 struct
+foo 属于 type namespace。除了 type 和 value namespace 之外，还有 macro、lifetime
 以及 label namespace， 如果想知道不同 namespace 下有哪些东西，可以参考 [rust
 reference
 namespace](https://doc.rust-lang.org/nightly/reference/names/namespaces.html)
 
 ## Import
+
 考虑 import 的话，会让问题变得复杂起来。
 
 ```rust
@@ -100,10 +103,10 @@ mod c {
 
 working list 可能要遍历多次，考虑上面这个例子，第一轮 resolve 后，会得到一个包含
 `use crate::b::bar`, `use crate::c::bar` 的 working list，遍历 working list，先
-去resolve `use crate::b::bar`，但 resolve 它依赖 `use crate::c::bar` 先
+去 resolve `use crate::b::bar`，但 resolve 它依赖 `use crate::c::bar` 先
 resolve。所以第一次遍历 working list 后还会剩下 `use crate::b::bar`，再遍历一次
-才能完成所有的name resolution。当然，也有可能 working list 无法清空，比如 mod c
-中并没有定义bar 函数。这个方法的核心思想就是不断遍历 working list，直到 working
+才能完成所有的 name resolution。当然，也有可能 working list 无法清空，比如 mod c
+中并没有定义 bar 函数。这个方法的核心思想就是不断遍历 working list，直到 working
 list 的长度不变，如果 working list 为空，那就说明 name resolution 成功，反之则说
 明代码有问题。
 
@@ -137,7 +140,7 @@ struct Foo {
       L_PAREN@183..184 "("
       IDENT@184..187 "Foo"
       R_PAREN@187..188 ")"
-    SEMICOLON@188..189 ";" 
+    SEMICOLON@188..189 ";"
 ```
 
 macro expansion 发生在 name resolution 中，处理的方式和 import 类似，遇到还不能

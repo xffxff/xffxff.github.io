@@ -1,13 +1,13 @@
 ---
-title: "Salsa: LRU needs keep dependency info"
-date: "2022-08-23"
+title: 'Salsa: LRU needs keep dependency info'
+date: '2022-08-23'
 ---
 
 reivew [#371] 加深了我对 salsa 做 recomputation 的理解。
 
 <!-- more -->
 
-我们先来看一个测试，思考这个测试能否 pass  
+我们先来看一个测试，思考这个测试能否 pass
 
 ```rust
 #[salsa::tracked(jar = Jar, lru = 3)]
@@ -53,15 +53,15 @@ fn lru_keeps_dependency_info() {
 }
 ```
 
-这个测试是要做什么？  
+这个测试是要做什么？
 
-为了方便，将 `get_hot_potato` 记为 `get`，`get_hot_potato2` 记为 `get2`。  
+为了方便，将 `get_hot_potato` 记为 `get`，`get_hot_potato2` 记为 `get2`。
 
 我们有两个 tracked function：`get` 和 `get2`，不用关心这两个 function 做了啥，只需要知道
-`get2` 调用了 `get`，也就是说 `get2` 依赖 `get` 的结果。另一个需要注意的点是 `get` 设置了 `lru = 3`，而 `get2` 没有设置 lru。  
+`get2` 调用了 `get`，也就是说 `get2` 依赖 `get` 的结果。另一个需要注意的点是 `get` 设置了 `lru = 3`，而 `get2` 没有设置 lru。
 
 现在调用 get2 四次，来看看 salsa 内部的状态，`get` 并没有存储 input 为 0 的结果，因为它设置了
-`lru = 3`，input 为 0 的结果被 evict 了。  
+`lru = 3`，input 为 0 的结果被 evict 了。
 
 ```
 +-------+----------------+-----------------+
@@ -78,25 +78,25 @@ fn lru_keeps_dependency_info() {
 ```
 
 我们现在调用 `get2(0)`（这里应该写 `input0` 会比较好，`input0 = MyInput::new(&mut db, 0)`，但为了简单就写了 0），
-能直接用 salsa 存储的结果吗？还需要重新计算吗？显然不用，不是存储有吗？那如果现在有别的输入改变了 salsa 的 `current_revision` 呢? 
-`synthetic_write` 就是在做这件事。也就是说 salsa 的 `current_revision` 大于 `get` 和 `get2` 结果被 verify 
+能直接用 salsa 存储的结果吗？还需要重新计算吗？显然不用，不是存储有吗？那如果现在有别的输入改变了 salsa 的 `current_revision` 呢?
+`synthetic_write` 就是在做这件事。也就是说 salsa 的 `current_revision` 大于 `get` 和 `get2` 结果被 verify
 的 revision。这意味着 [shallow_verify_memo] 不能确定 `get2(0)` 的结果是否能用，得让 [deep_verify_memo]
 去进一步判断。`deep_verify_memo` 会检查 `get2(0)` 依赖的其他计算结果有没有改变，所以会去查看 `get(0)`，
 发现压根儿没有存储 `get(0)` 的结果，当然也没法判断它有没有改变，只能保守地认为发生了改变，所以 `get2(0)` 和
-`get(0)` 都会重新计算。  
+`get(0)` 都会重新计算。
 
 [shallow_verify_memo]: https://github.com/salsa-rs/salsa/blob/d3f0077d212d76ae81e6df0b7614ece9df469ed0/components/salsa-2022/src/function/maybe_changed_after.rs#L107-L135
-[deep_verify_memo]: https://github.com/salsa-rs/salsa/blob/d3f0077d212d76ae81e6df0b7614ece9df469ed0/components/salsa-2022/src/function/maybe_changed_after.rs#L145-L202  
+[deep_verify_memo]: https://github.com/salsa-rs/salsa/blob/d3f0077d212d76ae81e6df0b7614ece9df469ed0/components/salsa-2022/src/function/maybe_changed_after.rs#L145-L202
 
 显然，这不够好，实际上 `get2(0)` 的结果是可以重用的，因为 `get(0)` 的结果虽然被 evict 了，但并没有发生改变。
-**在我们这个场景下，`get2(0)` 并不关心 `get(0)` 的结果是多少，只关心从它上次被 verify 后有没有发生改变**。  
+**在我们这个场景下，`get2(0)` 并不关心 `get(0)` 的结果是多少，只关心从它上次被 verify 后有没有发生改变**。
 
 有没有方法去优化它呢？[#371] 提供了一种解决方案。我们 evict 的时候，不再直接删除整个 `Memo`，只是把 `Memo.value` 设置为 `None`，保留
-`verified_at` 和 `revisions`。  
+`verified_at` 和 `revisions`。
 
 ```rust
 /// Evicts the existing memo for the given key, replacing it
-/// with an equivalent memo that has no value. If the memo is untracked, BaseInput, 
+/// with an equivalent memo that has no value. If the memo is untracked, BaseInput,
 /// or has values assigned as output of another query, this has no effect.
 pub(super) fn evict(&self, key: K) {
     use dashmap::mapref::entry::Entry::*;
@@ -115,7 +115,7 @@ pub(super) fn evict(&self, key: K) {
                 // as their values cannot be reconstructed.
                 return;
             },
-            
+
             QueryOrigin::Derived(_) => {
                 let memo_evicted = Arc::new(Memo::new(
                     None::<V>,
