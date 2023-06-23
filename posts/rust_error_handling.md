@@ -3,13 +3,6 @@ title: "anyhow vs error_stack: 从用户的角度来看错误处理"
 date: "2023-06-19"
 ---
 
-```mermaid
-graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
-```
 本文围绕一个例子，以用户的角度来讨论 [anyhow](https://docs.rs/anyhow/latest/anyhow/), [error_stack](https://docs.rs/error-stack/latest/error_stack/) 解决了什么样的需求，能否给错误处理带来便利。
 
 > 本文的例子改编自 [error_stack README.md](https://github.com/hashintel/hash/blob/main/libs/error-stack/README.md)
