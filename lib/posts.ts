@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm'
 import remarkRehype from 'remark-rehype'
 import rehypeStringify from 'rehype-stringify'
 import rehypeHighlight from 'rehype-highlight'
+import rehypeMermaid from 'rehype-mermaidjs'
 
 const postsDirectory = path.join(process.cwd(), 'posts')
 
@@ -67,6 +68,7 @@ export async function getPostData(id: string) {
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkRehype)
+    .use(rehypeMermaid)
     .use(rehypeHighlight, {plainText: ['txt', 'text']})
     .use(rehypeStringify)
     .process(matterResult.content)
