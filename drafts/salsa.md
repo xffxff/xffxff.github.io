@@ -72,11 +72,12 @@ graph TD;
 
 ## Salsa 和核心思路
 
-Salsa 引入了 revision 的概念，整个系统的 revision 从 1 开始，每次有输入节点的值发生变化，revision 就会加 1，我们把这个 revision 叫做 `current_revision`。每个节点都有一个 `revision`，表示上次该节点的值发生变化的 revision，我们把这个 revision 叫做 `changed_at`。计算节点还有一个 revision，用来表示该节点的值在哪个 revision 被验证过是有效的，我们把这个 revision 叫做 `verified_at`。
+Salsa 引入了 revision 的概念，整个系统的 revision 从 1 开始，每次有输入节点的值发生变化，revision 就会加 1，我们把这个 revision 叫做 `current_revision`。每个节点都有一个 `revision`，表示上次该节点的值发生变化时系统的 revision，我们把这个 revision 叫做 `changed_at`。计算节点还有一个 revision，用来表示该节点的值在哪个 revision 被验证过是有效的，我们把这个 revision 叫做 `verified_at`。
 
 
 ```mermaid
 graph TD;
+
     bp("Burrito Price: $8 
     ---
     changed_at: 1")
@@ -118,4 +119,62 @@ graph TD;
     salsa("Salsa in Order: 120g
     ---
     changed_at: 1");
+
+    current_revision{{current_revision: 1}};
 ```
+
+现在假设 Burrito Price 从 $8 变成了 $9，Ship Price 从 $2 变成了 $1，Salsa 是如何利用 revision 来实现增量计算的呢？
+
+```mermaid
+graph TD;
+
+    bp("Burrito Price: $9 
+    ---
+    changed_at: 2")
+
+    style bp fill:#f9f;
+
+    bpws("Burrito Price w Ship: · + · = 10
+    ---
+    changed_at: 1
+    verified_at: 1
+    ");
+
+    bp-->bpws
+
+    sp("Ship Price: $1
+    ---
+    changed_at: 3");
+
+    sp-->bpws;
+
+    nb("Number of Burritos: 3
+    ---
+    changed_at: 1
+    verified_at: 1
+    ")-->total;
+
+    style sp fill:#f9f;
+
+    bpws-->total;
+
+    total("Total: · * · = 30
+    ---
+    changed_at: 1
+    verified_at: 1
+    ");
+
+    spb("Salsa Per Burrito: 40g
+    ---
+    changed_at: 1") --> salsa;
+
+    nb-->salsa;
+
+    salsa("Salsa in Order: 120g
+    ---
+    changed_at: 1");
+
+    current_revision{{current_revision: 3}};
+```
+
+> 这里 `current_revision` 从 1 变成了 3，对于整个系统来说，Burrito Price 和 Ship Price 先后发生了变化，每次变化都会增加 `current_revision`，所以 `current_revision` 从 1 变成了 3。相应的，Burrito Price 和 Ship Price 的 `changed_at` 也从 1 变成了 2 和 3。
