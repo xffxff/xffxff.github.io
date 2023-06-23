@@ -23,8 +23,6 @@ graph TD;
     salsa(Salsa in Order: 120g);
 ```
 
-<a href="https://lord.io/spreadsheets/">How to Recalculate a Spreedsheet</a>
-
 > 我一直好奇为啥这个库取名叫 Salsa，难道和这个例子有什么关系？
 
 上图描述了计算之间的依赖关系，现在假设 Burrito Price 从 $8 变成了 $9，Ship Price 从 $2 变成了 $1，那么我们需要重新计算哪些值呢？
@@ -44,7 +42,7 @@ graph TD;
     salsa(Salsa in Order: 120g);
 ```
 
-理想情况下，我们只需要重新计算 Burrito Price w Ship，而 total 虽然间接依赖了 Burrito Price，但它直接以来的 Burrito Price 并没有发生变化，所以不需要重新计算 total。当然，Salsa in Order 也不需要重新计算。这就是增量计算，尽量重用之前的计算结果。
+理想情况下，我们只需要重新计算 Burrito Price w Ship，而 total 虽然间接依赖了 Burrito Price，但它直接依赖的 Burrito Price w Ship 并没有发生变化，所以不需要重新计算 total。当然，Salsa in Order 也不需要重新计算。
 
 ```mermaid
 graph TD;
@@ -64,7 +62,7 @@ graph TD;
 
 ## Demand-driven Computation
 
-我们把上述计算图看作一整个系统，图中的节点分为两类：输入节点和计算节点。输入节点的值是外部输入的，计算节点的值是根据输入节点和其他计算节点的值计算出来的。上面这个例子中，Burrito Price、Ship Price 和 Number of Burritos 是输入节点，其他节点都是计算节点。
+我们把上图中的节点分为两类：输入节点和计算节点。输入节点的值是外部输入的，计算节点的值是根据其他节点的值计算出来的。上面这个例子中，Burrito Price、Ship Price 和 Number of Burritos 是输入节点，其他节点都是计算节点。
 
 当有输入节点的值发生变化时，只重新计算受影响的计算节点，这就是 Salsa 要做的事情吗？
 
@@ -74,10 +72,10 @@ graph TD;
 
 ## Salsa 和核心思路
 
-Salsa 引入了 revision 的概念，整个系统的 revision 从 1 开始，每次有输入节点的值发生变化，revision 就会加 1，我们把这个 revision 叫做 `current_revision`。每个节点都有一个 `revision`，表示上次该节点的值发生变化的 revision，我们把这个 revision 叫做 `changed_at`。计算节点还有一个 `revision`，用来表示该节点的值在哪个 `revision` 被验证过是有效的，我们把这个 revision 叫做 `verified_at`。
+Salsa 引入了 revision 的概念，整个系统的 revision 从 1 开始，每次有输入节点的值发生变化，revision 就会加 1，我们把这个 revision 叫做 `current_revision`。每个节点都有一个 `revision`，表示上次该节点的值发生变化的 revision，我们把这个 revision 叫做 `changed_at`。计算节点还有一个 revision，用来表示该节点的值在哪个 revision 被验证过是有效的，我们把这个 revision 叫做 `verified_at`。
 
 
-```
+```mermaid
 graph TD;
     bp("Burrito Price: $8 
     ---
