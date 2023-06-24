@@ -3,8 +3,6 @@ title: 'How Salsa Works'
 date: '2023-06-23'
 ---
 
-## Increamental Computation
-
 [Salsa](https://github.com/salsa-rs/salsa) 要解决的问题叫做“增量计算”（incremental computation），这个问题的核心是：在计算的时候，如何利用之前的计算结果，避免重复计算，从而加快计算速度。
 
 下面来看一个例子，这个例子改编自 [How to Recalculate a Spreedsheet](https://lord.io/spreadsheets/)。
@@ -60,7 +58,7 @@ graph TD;
     salsa(Salsa in Order: 120g);
 ```
 
-## Demand-driven Computation
+<!-- ## Demand-driven Computation
 
 我们把上图中的节点分为两类：输入节点和计算节点。输入节点的值是外部输入的，计算节点的值是根据其他节点的值计算出来的。上面这个例子中，Burrito Price、Ship Price 和 Number of Burritos 是输入节点，其他节点都是计算节点。
 
@@ -68,11 +66,13 @@ graph TD;
 
 大体是这样，但 Salsa 还有另外一个特点：demand-driven computation。这个词翻译成中文叫“需求驱动计算”，这个词的意思是：当一个计算节点的值被需要的时候，才计算这个节点的值。或者可以叫做 lazy computation （惰性计算）。举个例子，假设 Burrito Price 变化了，Salsa 并不会立刻计算并更新 Burrito Price w Ship 的值和 Total 的值，如果现在没有任何代码需要用到这两个值，那么 Salsa 会等到有代码需要用到这两个值的时候，才计算并更新这两个值。
 
-从计算图的角度来看，Salsa 的计算是自底向上的，计算一个节点的值之前，先计算这个节点的所有父节点的值。
+从计算图的角度来看，Salsa 的计算是自底向上的，计算一个节点的值之前，先计算这个节点的所有父节点的值。 -->
 
 ## How Salsa Works
 
-Salsa 引入了 revision 的概念，整个系统的 revision 从 1 开始，每次有输入节点的值发生变化，revision 就会加 1，我们把这个 revision 叫做 `current_revision`。每个节点都有一个 `revision`，表示上次该节点的值发生变化时系统的 revision，我们把这个 revision 叫做 `changed_at`。计算节点还有一个 revision，用来表示该节点的值在哪个 revision 被验证过是有效的，我们把这个 revision 叫做 `verified_at`。
+上述计算的问题可以抽象为一个有向无环图（DAG），节点表示输入或计算，边表示依赖关系。
+
+Salsa 引入了一个概念：revision。我们把整个计算问题视作一个系统，系统的 revision 从 1 开始，每次有输入节点的值发生变化，revision 就会加 1，我们把这个 revision 叫做 `current_revision`。每个节点都有一个 `revision`，表示上次该节点的值发生变化时系统的 revision，我们把这个 revision 叫做 `changed_at`。计算节点还有一个 revision，用来表示该节点的值在哪个 revision 被验证过是有效的，我们把这个 revision 叫做 `verified_at`。
 
 
 ```mermaid
@@ -118,7 +118,9 @@ graph TD;
 
     salsa("Salsa in Order: 120g
     ---
-    changed_at: 1");
+    changed_at: 1
+    verified_at: 1
+    ");
 
     current_revision{{current_revision: 1}};
 ```
