@@ -46,15 +46,15 @@ graph TD;
 
 ```mermaid
 graph TD;
-    bp(Burrito Price: $9)-->bpws("Burrito Price w Ship: · + · = 11");
-    style bp fill:#f9f;
-    style bpws fill:#fff;
+    bp(Burrito Price: $9)-->bpws("Burrito Price w Ship: · + · = 10");
+    style bp fill:red;
+    style bpws fill:green;
     sp(Ship Price: $2);
-    style sp fill:#f9f;
+    style sp fill:red;
     sp-->bpws;
     nb(Number of Burritos: 3)-->total;
     bpws-->total;
-    total("Total: · * · = 33");
+    total("Total: · * · = 30");
     spb(Salsa Per Burrito: 40g) --> salsa;
     nb-->salsa;
     salsa(Salsa in Order: 120g);
@@ -70,7 +70,7 @@ graph TD;
 
 从计算图的角度来看，Salsa 的计算是自底向上的，计算一个节点的值之前，先计算这个节点的所有父节点的值。
 
-## Salsa 和核心思路
+## How Salsa Works
 
 Salsa 引入了 revision 的概念，整个系统的 revision 从 1 开始，每次有输入节点的值发生变化，revision 就会加 1，我们把这个 revision 叫做 `current_revision`。每个节点都有一个 `revision`，表示上次该节点的值发生变化时系统的 revision，我们把这个 revision 叫做 `changed_at`。计算节点还有一个 revision，用来表示该节点的值在哪个 revision 被验证过是有效的，我们把这个 revision 叫做 `verified_at`。
 
@@ -132,7 +132,7 @@ graph TD;
     ---
     changed_at: 2")
 
-    style bp fill:#f9f;
+    style bp fill:red;
 
     bpws("Burrito Price w Ship: · + · = 10
     ---
@@ -154,7 +154,7 @@ graph TD;
     verified_at: 1
     ")-->total;
 
-    style sp fill:#f9f;
+    style sp fill:red;
 
     bpws-->total;
 
@@ -178,3 +178,32 @@ graph TD;
 ```
 
 > 这里 `current_revision` 从 1 变成了 3，对于整个系统来说，Burrito Price 和 Ship Price 先后发生了变化，每次变化都会增加 `current_revision`，所以 `current_revision` 从 1 变成了 3。相应的，Burrito Price 和 Ship Price 的 `changed_at` 也从 1 变成了 2 和 3。
+
+现在想要获取 Total 的值，流程如下：
+
+```mermaid
+flowchart TD
+    A[获取 Total 的计算结果];
+    B("之前是否计算过");
+    A-->B;
+    B-->|否| C[重新计算 Total];
+    B-->|是| D("Total's verified_at 是否等于 current_revision");
+    D-->|是| E[直接返回 Total 上一次的计算结果];
+    D-->|否| F[检查 Total 的依赖是否有变化];
+    G["Burrito Price w Ship 是否在 Total's verified_at 之后发生变化"];
+    F-->G;
+
+    I("Burrito Price w Ship's verified_at 是否等于 current_revision");
+    G-->I;
+    I-->|否| K[重新计算 Burrito Price w Ship];
+    I-->|是| O(Burrito Price w Ship's changed_at 大于 Total's verified_at?)
+    O-->|是| P[重新计算 Total];
+    O-->|否| J;
+    J["Number of Burritos's 是否在 Total's verified_at 之后发生变化"];
+    L("Number of Burritos's verified_at 是否等于 current_revision");
+    J-->L;
+    L-->|否| N[重新计算 Number of Burritos];
+    L-->|是| M(Number of Burritos's changed_at 大于 Total's verified_at?)
+    M-->|是| Q[重新计算 Total];
+    M-->|否| R[直接返回 Total 上一次的计算结果];
+```
