@@ -223,7 +223,7 @@ graph TD
     G --> A
     G --> F
 
-    I("是否存在 A 的依赖节点的 changed_at 大于 A 的 verified_at？")
+    I("是否存在 A 的依赖，其 changed_at 大于 A 的 verified_at？")
     F --> I
     I --> |是| J("重新计算 A 的值")
     I --> |否| K("返回 A 的旧值")
