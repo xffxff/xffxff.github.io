@@ -25,7 +25,7 @@ graph TD;
 
 上图描述了计算之间的依赖关系，现在假设 Burrito Price 从 $8 变成了 $9，Ship Price 从 $2 变成了 $1，那么我们需要重新计算哪些值呢？
 
-理想情况下，我们只需要重新计算 Burrito Price w Ship，而 total 虽然间接依赖了 Burrito Price，但它直接依赖的 Burrito Price w Ship 并没有发生变化，所以不需要重新计算 total。当然，Salsa in Order 也不需要重新计算。
+理想情况下，我们只需要重新计算 Burrito Price w Ship，而 Total 虽然间接依赖了 Burrito Price，但它直接依赖的 Burrito Price w Ship 并没有发生变化，所以不需要重新计算 Total。当然，Salsa in Order 也不需要重新计算。
 
 ```mermaid
 graph TD;
@@ -46,11 +46,9 @@ graph TD;
 
 上述计算的问题可以抽象为一个有向无环图（DAG），节点表示输入或计算，边表示依赖关系。
 
-Salsa 引入了一个概念：revision。我们把整个计算问题视作一个系统，系统的 revision 从 1 开始，每次有输入节点的值发生变化，revision 就会加 1，我们把这个 revision 叫做 `current_revision`。每个节点都有一个 `revision`，表示上次该节点的值发生变化时系统的 revision，我们把这个 revision 叫做 `changed_at`。计算节点还有一个 revision，用来表示该节点的值在哪个 revision 被验证过是有效的，我们把这个 revision 叫做 `verified_at`。
+Salsa 引入了一个概念：revision。我们把整个计算问题视作一个系统，系统的 revision 从 1 开始，每次有**输入节点**的值发生变化，revision 就会加 1，我们把这个 revision 叫做 `current_revision`。每个节点都有一个 `revision`，表示该节点的值上次发生变化时系统的 revision，我们把这个 revision 叫做 `changed_at`。计算节点还有一个 revision，用来表示该节点的值在哪个 revision 被验证过是有效的，我们把这个 revision 叫做 `verified_at`。
 
-<!-- `changed_at` 和 `verified_at` 配合起来，可以用来判断一个节点的旧值是否可以重用，那它们是如何配合起来工作的呢？我们来看一个例子。 -->
-
-当一个节点的 `verified_at` 小于 `current_revision` 时，表示该节点的旧值**可能**已经过时，不能直接使用。注意这里的“可能”，并不是说这种情况下旧值就一定过时了。
+当一个节点的 `verified_at` 小于 `current_revision` 时，表示该节点的旧值**可能**已经过时，不能直接使用。注意这里的“可能”，并不是说这种情况下旧值就一定过时了，比如说下面这种情况：
 
 ```mermaid
 graph TD;
@@ -102,7 +100,7 @@ graph TD;
 
     current_revision{{current_revision: 2}};
 ```
-这里我们改变了 Number of Burritos 的值，current_revision 从 1 变成了 2，Number of Burritos 的 changed_at 也从 1 变成了 2。Burrito Price w Ship 的
+这里改变了 Number of Burritos 的值，Salsa 会把 current_revision 和 Number of Burritos 的 changed_at 从 1 变更为 2。Burrito Price w Ship 的
 `verified_at(1)` 小于 `current_revision(2)`，所以 Burrito Price w Ship 的旧值**可能**已经过时，不能直接使用。但是从图上，可以直观得出结论 Burrito Price w Ship 的旧值并没有过时，因为 Number of Burritos 的变化并不会影响 Burrito Price w Ship 的值。假设现在要获取 Burrito Price w Ship 的值，Salsa 会怎么做呢？
 
 ```mermaid
@@ -122,9 +120,7 @@ graph TD
     H --> I("Ship Price's changed_at 大于 Burrito Price w Ship's verified_at？")
     I --> |是| J("重新计算 Burrito Price w Ship 的值")
     I --> |否| K("直接使用 Burrito Price w Ship 的旧值")
-    K --> M("更新 Burrito Price w Ship:
-            verified_at -> current_revision
-            changed_at 不变")
+    K --> M("`更新 Burrito Price w Ship: verified_at -> current_revision **changed_at 不变**`")
     N("更新 Burrito Price w Ship:
             verified_at -> current_revision
             changed_at -> current_revision")

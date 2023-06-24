@@ -70,7 +70,15 @@ export async function getPostData(id: string) {
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkRehype)
-    .use(rehypeMermaid)
+    .use(rehypeMermaid, {
+      strategy: 'img-svg',
+      mermaidConfig: {
+        flowchart: {
+          htmlLabels: true,
+        },
+        securityLevel: 'loose',
+      }
+    })
     .use(rehypeHighlight, { plainText: ['txt', 'text'] })
     .use(rehypeStringify)
     .process(matterResult.content)
