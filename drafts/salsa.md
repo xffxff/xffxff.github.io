@@ -21,24 +21,9 @@ graph TD;
     salsa(Salsa in Order: 120g);
 ```
 
-> 我一直好奇为啥这个库取名叫 Salsa，难道和这个例子有什么关系？
+> 我一直好奇为啥这个库取名叫 Salsa，难道和这个例子有什么关系？但也没有其他的相关证据
 
 上图描述了计算之间的依赖关系，现在假设 Burrito Price 从 $8 变成了 $9，Ship Price 从 $2 变成了 $1，那么我们需要重新计算哪些值呢？
-
-```mermaid
-graph TD;
-    update("Burrito Price: $8 --> $9");
-    update-.->|update|bp;
-    bp(Burrito Price: $8)-->bpws("Burrito Price w Ship: · + · = 10");
-    sp(Ship Price: $2);
-    sp-->bpws;
-    nb(Number of Burritos: 3)-->total;
-    bpws-->total;
-    total("Total: · * · = 30");
-    spb(Salsa Per Burrito: 40g) --> salsa;
-    nb-->salsa;
-    salsa(Salsa in Order: 120g);
-```
 
 理想情况下，我们只需要重新计算 Burrito Price w Ship，而 total 虽然间接依赖了 Burrito Price，但它直接依赖的 Burrito Price w Ship 并没有发生变化，所以不需要重新计算 total。当然，Salsa in Order 也不需要重新计算。
 
@@ -57,17 +42,6 @@ graph TD;
     nb-->salsa;
     salsa(Salsa in Order: 120g);
 ```
-
-<!-- ## Demand-driven Computation
-
-我们把上图中的节点分为两类：输入节点和计算节点。输入节点的值是外部输入的，计算节点的值是根据其他节点的值计算出来的。上面这个例子中，Burrito Price、Ship Price 和 Number of Burritos 是输入节点，其他节点都是计算节点。
-
-当有输入节点的值发生变化时，只重新计算受影响的计算节点，这就是 Salsa 要做的事情吗？
-
-大体是这样，但 Salsa 还有另外一个特点：demand-driven computation。这个词翻译成中文叫“需求驱动计算”，这个词的意思是：当一个计算节点的值被需要的时候，才计算这个节点的值。或者可以叫做 lazy computation （惰性计算）。举个例子，假设 Burrito Price 变化了，Salsa 并不会立刻计算并更新 Burrito Price w Ship 的值和 Total 的值，如果现在没有任何代码需要用到这两个值，那么 Salsa 会等到有代码需要用到这两个值的时候，才计算并更新这两个值。
-
-从计算图的角度来看，Salsa 的计算是自底向上的，计算一个节点的值之前，先计算这个节点的所有父节点的值。 -->
-
 ## How Salsa Works
 
 上述计算的问题可以抽象为一个有向无环图（DAG），节点表示输入或计算，边表示依赖关系。
@@ -162,7 +136,64 @@ graph TD
     E --> O
 ```
 
-把上述过程抽象出来
+查询 Burrito Price w Ship 的值后，整个系统的状态如下：
+
+```mermaid
+graph TD;
+
+    bp("Burrito Price: $8 
+    ---
+    changed_at: 1")
+
+    bpws("Burrito Price w Ship: · + · = 10
+    ---
+    changed_at: 1
+    verified_at: 2
+    ");
+    style bpws fill:green;
+
+    bp-->bpws
+
+    sp("Ship Price: $2
+    ---
+    changed_at: 1");
+
+    sp-->bpws;
+
+    nb("Number of Burritos: 4
+    ---
+    changed_at: 2
+    ")-->total;
+
+    style nb fill:red;
+
+    bpws-->total;
+
+    total("Total: · * · = 30
+    ---
+    changed_at: 1
+    verified_at: 1
+    ");
+
+    spb("Salsa Per Burrito: 40g
+    ---
+    changed_at: 1") --> salsa;
+
+    nb-->salsa;
+
+    salsa("Salsa in Order: 120g
+    ---
+    changed_at: 1
+    verified_at: 1
+    ");
+
+    current_revision{{current_revision: 2}};
+```
+
+> 注意：这里并没有更新 Total 这个节点，这是因为 Salsa 的计算是 lazy 的，只有当节点被查询时，才会计算 Salsa 的值。这个特点也叫做 Demand-driven computation。
+
+
+把上述过程抽象出来，查询任一节点的流程像下面这样：
 
 ```mermaid
 graph TD
