@@ -243,3 +243,9 @@ graph TD
 
     P --> |否| M
 ```
+
+## 参考资料
+
+- [How to recalculate a spreadsheet](https://lord.io/spreadsheets/)
+- [How Salsa works](https://salsa-rs.netlify.app/how_salsa_works.html)
+- [The source code of Salsa](https://github.com/salsa-rs/salsa)
