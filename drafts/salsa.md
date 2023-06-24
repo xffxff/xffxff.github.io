@@ -99,7 +99,7 @@ graph TD;
 
     sp-->bpws;
 
-    nb("Number of Burritos: 3
+    nb("Number of Burritos: 4
     ---
     changed_at: 2
     ")-->total;
@@ -127,6 +127,36 @@ graph TD;
     ");
 
     current_revision{{current_revision: 2}};
+```
+这里我们改变了 Number of Burritos 的值，current_revision 从 1 变成了 2，Number of Burritos 的 changed_at 也从 1 变成了 2。Burrito Price w Ship 的
+`verified_at(1)` 小于 `current_revision(2)`，所以 Burrito Price w Ship 的旧值**可能**已经过时，不能直接使用。但是从图上，可以直观得出结论 Burrito Price w Ship 的旧值并没有过时，因为 Number of Burritos 的变化并不会影响 Burrito Price w Ship 的值。假设现在要获取 Burrito Price w Ship 的值，Salsa 会怎么做呢？
+
+```mermaid
+graph TD
+    A("之前是否计算过 Burrito Price w Ship")
+    A --> |是| B("Burrito Price w Ship's verified_at 等于 current_revision?")
+    A --> |否| E("计算 Burrito Price w Ship 的值")
+    B --> |是| C("直接使用 Burrito Price w Ship 的旧值")
+
+    B --> |否| D("Burrito Price w Ship 的所有依赖是否在 Burrito Price w Ship's verified_at 之后发生过变化?")
+    F("Burrito Price 是否在 Burrito Price w Ship's verified_at 之后发生过变化？")
+    D --> F
+    G("Burrito Price's changed_at 大于 Burrito Price w Ship's verified_at？")
+    F --> G
+    G --> |是| H("Ship Price 是否在 Burrito Price w Ship's verified_at 之后发生过变化？")
+    G --> |否| L("重新计算 Burrito Price w Ship 的值")
+    H --> I("Ship Price's changed_at 大于 Burrito Price w Ship's verified_at？")
+    I --> |是| J("重新计算 Burrito Price w Ship 的值")
+    I --> |否| K("直接使用 Burrito Price w Ship 的旧值")
+    K --> M("更新 Burrito Price w Ship:
+            verified_at 设置为 current_revision
+            changed_at 不变")
+    N("更新 Burrito Price w Ship:
+            verified_at 设置为 current_revision
+            changed_at 设置为 current_revision")
+    J --> N
+    L --> N
+    A --> N
 ```
 
 假设系统的状态如下，Total 的旧值能直接使用吗？
