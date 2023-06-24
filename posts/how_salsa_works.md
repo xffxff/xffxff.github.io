@@ -120,16 +120,23 @@ graph TD
     H --> I("Ship Price's changed_at 大于 Burrito Price w Ship's verified_at？")
     I --> |是| J("重新计算 Burrito Price w Ship 的值")
     I --> |否| K("直接使用 Burrito Price w Ship 的旧值")
-    K --> M("`更新 Burrito Price w Ship: verified_at -> current_revision **changed_at 不变**`")
+    K --> M("更新 Burrito Price w Ship: 
+        verified_at -> current_revision
+        changed_at 不变")
+    P("新值和旧值相等吗？")
+    J --> P
+    L --> P
     N("更新 Burrito Price w Ship:
             verified_at -> current_revision
             changed_at -> current_revision")
-    J --> N
-    L --> N
+    
     O("设置 Burrito Price w Ship:
             verified_at -> current_revision
             changed_at -> current_revision")
     E --> O
+
+    P --> |是| M
+    P --> |否| N
 ```
 
 查询 Burrito Price w Ship 的值后，整个系统的状态如下：
