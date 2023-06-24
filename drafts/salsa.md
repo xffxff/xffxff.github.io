@@ -162,137 +162,45 @@ graph TD
     E --> O
 ```
 
+把上述过程抽象出来
 
 ```mermaid
-graph TD;
+graph TD
+    A("查询某一个计算节点（记该节点为 A）")
+    B("之前是否计算过 A")
+    A --> B
+    C("A 的 verified_at 等于 current_revision?")
+    B --> |是| C
+    C --> |是| D("返回 A 的旧值")
 
-    bp("Burrito Price: $8 
-    ---
-    changed_at: 1")
+    B --> |否| N
+    N("计算 A")
 
-    bpws("Burrito Price w Ship: · + · = 10
-    ---
-    changed_at: 1
-    verified_at: 1
-    ");
+    O("设置 A:
+            verified_at -> current_revision
+            changed_at -> current_revision")
+    N --> O
 
-    bp-->bpws
 
-    sp("Ship Price: $2
-    ---
-    changed_at: 1");
+    F("A 的所有依赖是否在 A 的 verified_at 之后发生过变化?")
+    C --> |否| F
+    G("查询 A 的依赖节点")
+    G --> A
+    F --> G
 
-    sp-->bpws;
+    H("是否存在 A 的依赖节点在 A 的 verified_at 之后发生过变化？")
+    G --> H
+    I("是否存在 A 的依赖节点的 changed_at 大于 A 的 verified_at？")
+    H --> I
+    I --> |是| J("重新计算 A 的值")
+    I --> |否| K("返回 A 的旧值")
 
-    nb("Number of Burritos: 3
-    ---
-    changed_at: 1
-    ")-->total;
+    K --> L("更新 A:
+            verified_at -> current_revision
+            changed_at 不变")
 
-    bpws-->total;
+    J --> M("更新 A:
+            verified_at -> current_revision
+            changed_at -> current_revision")
 
-    total("Total: · * · = 30
-    ---
-    changed_at: 1
-    verified_at: 1
-    ");
-
-    spb("Salsa Per Burrito: 40g
-    ---
-    changed_at: 1") --> salsa;
-
-    nb-->salsa;
-
-    salsa("Salsa in Order: 120g
-    ---
-    changed_at: 1
-    verified_at: 1
-    ");
-
-    current_revision{{current_revision: 1}};
-```
-
-现在假设 Burrito Price 从 $8 变成了 $9，Ship Price 从 $2 变成了 $1，Salsa 是如何利用 revision 来实现增量计算的呢？
-
-```mermaid
-graph TD;
-
-    bp("Burrito Price: $9 
-    ---
-    changed_at: 2")
-
-    style bp fill:red;
-
-    bpws("Burrito Price w Ship: · + · = 10
-    ---
-    changed_at: 1
-    verified_at: 1
-    ");
-
-    bp-->bpws
-
-    sp("Ship Price: $1
-    ---
-    changed_at: 3");
-
-    sp-->bpws;
-
-    nb("Number of Burritos: 3
-    ---
-    changed_at: 1
-    verified_at: 1
-    ")-->total;
-
-    style sp fill:red;
-
-    bpws-->total;
-
-    total("Total: · * · = 30
-    ---
-    changed_at: 1
-    verified_at: 1
-    ");
-
-    spb("Salsa Per Burrito: 40g
-    ---
-    changed_at: 1") --> salsa;
-
-    nb-->salsa;
-
-    salsa("Salsa in Order: 120g
-    ---
-    changed_at: 1");
-
-    current_revision{{current_revision: 3}};
-```
-
-> 这里 `current_revision` 从 1 变成了 3，对于整个系统来说，Burrito Price 和 Ship Price 先后发生了变化，每次变化都会增加 `current_revision`，所以 `current_revision` 从 1 变成了 3。相应的，Burrito Price 和 Ship Price 的 `changed_at` 也从 1 变成了 2 和 3。
-
-现在想要获取 Total 的值，流程如下：
-
-```mermaid
-flowchart TD
-    A[获取 Total 的计算结果];
-    B("之前是否计算过");
-    A-->B;
-    B-->|否| C[重新计算 Total];
-    B-->|是| D("Total's verified_at 是否等于 current_revision");
-    D-->|是| E[直接返回 Total 上一次的计算结果];
-    D-->|否| F[检查 Total 的依赖是否有变化];
-    G["Burrito Price w Ship 是否在 Total's verified_at 之后发生变化"];
-    F-->G;
-
-    I("Burrito Price w Ship's verified_at 是否等于 current_revision");
-    G-->I;
-    I-->|否| K[重新计算 Burrito Price w Ship];
-    I-->|是| O(Burrito Price w Ship's changed_at 大于 Total's verified_at?)
-    O-->|是| P[重新计算 Total];
-    O-->|否| J;
-    J["Number of Burritos's 是否在 Total's verified_at 之后发生变化"];
-    L("Number of Burritos's verified_at 是否等于 current_revision");
-    J-->L;
-    L-->|否| N[重新计算 Number of Burritos];
-    L-->|是| M(Number of Burritos's changed_at 大于 Total's verified_at?)
-    M-->|是| Q[重新计算 Total];
-    M-->|否| R[直接返回 Total 上一次的计算结果];
 ```
