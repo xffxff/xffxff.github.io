@@ -110,7 +110,7 @@ graph TD
     A --> |否| E("计算 Burrito Price w Ship 的值")
     B --> |是| C("直接使用 Burrito Price w Ship 的旧值")
 
-    B --> |否| D("Burrito Price w Ship 的所有依赖是否在 Burrito Price w Ship's verified_at 之后发生过变化?")
+    B --> |否| D("Burrito Price w Ship 的依赖是否在 Burrito Price w Ship's verified_at 之后发生过变化?")
     F("Burrito Price 是否在 Burrito Price w Ship's verified_at 之后发生过变化？")
     D --> F
     G("Burrito Price's changed_at 大于 Burrito Price w Ship's verified_at？")
@@ -138,6 +138,7 @@ graph TD
     P --> |是| M
     P --> |否| N
 ```
+> **NOTE**：如果需要重新计算的话，重新计算完 Burrito Price w Ship 的值后，需要比较新值和旧值是否相等，如果相等的话，就不需要改变 Burrito Price w Ship 的 `changed_at`。这一点很重要，Salsa 把它叫做 backdate，backdate 使 Salsa 能重用更多的计算结果。考虑之前的例子，如果同时改变 Burrito Price 和 Ship Price，Burrito Price 从 8 变成 9，Ship Price 从 2 变成 1，那么 Burrito Price w Ship 的值就不会改变，backdate 使得 Salsa 不用重新计算 Total 的值。（感兴趣的话可以根据上述流程图，自己推导一下）
 
 查询 Burrito Price w Ship 的值后，整个系统的状态如下：
 
@@ -193,21 +194,21 @@ graph TD;
     current_revision{{current_revision: 2}};
 ```
 
-> 注意：这里并没有更新 Total 这个节点，这是因为 Salsa 的计算是 lazy 的，只有当节点被查询时，才会计算 Salsa 的值。这个特点也叫做 Demand-driven computation。
+> **NOTE**：这里并没有更新 Total 这个节点，这是因为 Salsa 的计算是 **lazy** 的，只有当节点被查询时，才会计算它的值。这个特点也叫做 **demand-driven computation**。
 
 
-把上述过程抽象出来，查询任一节点的流程像下面这样：
+把上述过程抽象出来，得到查询任一节点的流程：
 
 ```mermaid
 graph TD
-    A("查询某一个计算节点（记该节点为 A）")
+    A("查询某一计算节点（记该节点为 A）")
     B("之前是否计算过 A")
     A --> B
     C("A 的 verified_at 等于 current_revision?")
+    B --> |否| N
     B --> |是| C
     C --> |是| D("返回 A 的旧值")
 
-    B --> |否| N
     N("计算 A")
 
     O("设置 A:
@@ -216,25 +217,29 @@ graph TD
     N --> O
 
 
-    F("A 的所有依赖是否在 A 的 verified_at 之后发生过变化?")
-    C --> |否| F
+    C --> |否| G
     G("查询 A 的依赖节点")
+    F("是否存在 A 的依赖在 A 的 verified_at 之后发生过变化?")
     G --> A
-    F --> G
+    G --> F
 
-    H("是否存在 A 的依赖节点在 A 的 verified_at 之后发生过变化？")
-    G --> H
     I("是否存在 A 的依赖节点的 changed_at 大于 A 的 verified_at？")
-    H --> I
+    F --> I
     I --> |是| J("重新计算 A 的值")
     I --> |否| K("返回 A 的旧值")
 
-    K --> L("更新 A:
-            verified_at -> current_revision
-            changed_at 不变")
-
-    J --> M("更新 A:
+    M("更新 A:
             verified_at -> current_revision
             changed_at -> current_revision")
 
+    K --> M
+
+    P("新值和旧值相等吗？")
+    J --> P
+    P -->|是| L("更新 A:
+            verified_at -> current_revision
+            changed_at 不变")
+
+
+    P --> |否| M
 ```
