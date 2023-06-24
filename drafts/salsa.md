@@ -74,6 +74,91 @@ graph TD;
 
 Salsa 引入了一个概念：revision。我们把整个计算问题视作一个系统，系统的 revision 从 1 开始，每次有输入节点的值发生变化，revision 就会加 1，我们把这个 revision 叫做 `current_revision`。每个节点都有一个 `revision`，表示上次该节点的值发生变化时系统的 revision，我们把这个 revision 叫做 `changed_at`。计算节点还有一个 revision，用来表示该节点的值在哪个 revision 被验证过是有效的，我们把这个 revision 叫做 `verified_at`。
 
+<!-- `changed_at` 和 `verified_at` 配合起来，可以用来判断一个节点的旧值是否可以重用，那它们是如何配合起来工作的呢？我们来看一个例子。 -->
+
+当一个节点的 `verified_at` 小于 `current_revision` 时，表示该节点的旧值**可能**已经过时，不能直接使用。注意这里的“可能”，并不是说这种情况下旧值就一定过时了。
+
+```mermaid
+graph TD;
+
+    bp("Burrito Price: $8 
+    ---
+    changed_at: 1")
+
+    bpws("Burrito Price w Ship: · + · = 10
+    ---
+    changed_at: 1
+    verified_at: 1
+    ");
+
+    bp-->bpws
+
+    sp("Ship Price: $2
+    ---
+    changed_at: 1");
+
+    sp-->bpws;
+
+    nb("Number of Burritos: 3
+    ---
+    changed_at: 2
+    ")-->total;
+
+    style nb fill:red;
+
+    bpws-->total;
+
+    total("Total: · * · = 30
+    ---
+    changed_at: 1
+    verified_at: 1
+    ");
+
+    spb("Salsa Per Burrito: 40g
+    ---
+    changed_at: 1") --> salsa;
+
+    nb-->salsa;
+
+    salsa("Salsa in Order: 120g
+    ---
+    changed_at: 1
+    verified_at: 1
+    ");
+
+    current_revision{{current_revision: 2}};
+```
+
+假设系统的状态如下，Total 的旧值能直接使用吗？
+
+```mermaid
+graph TD
+    C("Total
+    ---
+    changed_at: 3
+    verified_at: 5")
+
+    D{{current_revision: 5}}
+```
+
+
+```mermaid
+graph TD
+    A("Burrito Price w Ship
+    ---
+    changed_at: 1
+    verified_at: 1")
+    B("Number of Burritos
+    ---
+    changed_at: 1")
+    C("Total
+    ---
+    changed_at: 1
+    verified_at: 1")
+    A-->C
+    B-->C
+```
+
 
 ```mermaid
 graph TD;
@@ -99,7 +184,6 @@ graph TD;
     nb("Number of Burritos: 3
     ---
     changed_at: 1
-    verified_at: 1
     ")-->total;
 
     bpws-->total;
