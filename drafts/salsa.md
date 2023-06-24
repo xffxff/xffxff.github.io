@@ -143,50 +143,23 @@ graph TD
     D --> F
     G("Burrito Price's changed_at 大于 Burrito Price w Ship's verified_at？")
     F --> G
-    G --> |是| H("Ship Price 是否在 Burrito Price w Ship's verified_at 之后发生过变化？")
-    G --> |否| L("重新计算 Burrito Price w Ship 的值")
+    G --> |是| L("重新计算 Burrito Price w Ship 的值")
+    G --> |否| H("Ship Price 是否在 Burrito Price w Ship's verified_at 之后发生过变化？")
     H --> I("Ship Price's changed_at 大于 Burrito Price w Ship's verified_at？")
     I --> |是| J("重新计算 Burrito Price w Ship 的值")
     I --> |否| K("直接使用 Burrito Price w Ship 的旧值")
     K --> M("更新 Burrito Price w Ship:
-            verified_at 设置为 current_revision
+            verified_at -> current_revision
             changed_at 不变")
     N("更新 Burrito Price w Ship:
-            verified_at 设置为 current_revision
-            changed_at 设置为 current_revision")
+            verified_at -> current_revision
+            changed_at -> current_revision")
     J --> N
     L --> N
-    A --> N
-```
-
-假设系统的状态如下，Total 的旧值能直接使用吗？
-
-```mermaid
-graph TD
-    C("Total
-    ---
-    changed_at: 3
-    verified_at: 5")
-
-    D{{current_revision: 5}}
-```
-
-
-```mermaid
-graph TD
-    A("Burrito Price w Ship
-    ---
-    changed_at: 1
-    verified_at: 1")
-    B("Number of Burritos
-    ---
-    changed_at: 1")
-    C("Total
-    ---
-    changed_at: 1
-    verified_at: 1")
-    A-->C
-    B-->C
+    O("设置 Burrito Price w Ship:
+            verified_at -> current_revision
+            changed_at -> current_revision")
+    E --> O
 ```
 
 
