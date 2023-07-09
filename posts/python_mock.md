@@ -29,7 +29,7 @@ def test_random_boolean():
         assert random_boolean() == True
 ```
 
-接下来如何实现 `patch`，让它完成上述的功能呢？
+接下来看看如何实现 `patch`，让它完成上述的功能呢？
 
 ### 实现 patch
 
