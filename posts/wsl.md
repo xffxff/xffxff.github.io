@@ -5,10 +5,10 @@ date: '2023-09-21'
 
 ## 安装 WSL2
 
-按照官网 [How to install Linux on Windows with WSLinstall wsl](https://learn.microsoft.com/en-us/windows/wsl/install#install-wsl-command) 的步骤安装 WSL2。下面是我安装的步骤：
+按照官网 [How to install Linux on Windows with WSL](https://learn.microsoft.com/en-us/windows/wsl/install#install-wsl-command) 的步骤安装 WSL2。下面是我安装的步骤：
 
 管理员身份运行 powershell，执行以下命令：
-```powershell
+```
 wsl --install
 ```
 
@@ -16,7 +16,7 @@ wsl --install
 
 执行 `wsl --list` 查看已安装的 distro，但是显示没有安装任何 distro。官方文档的意思是执行完 `wsl --install` 后会自动安装 Ubuntu，但是我这里没有自动安装 Ubuntu。然后我发现在应用程序列表中有一个 Ubuntu，点击它，按照提示安装 Ubuntu，然后就可以在 `wsl --list` 的输出中看到 Ubuntu 了。现在可以使用 `wsl` 命令进入 Ubuntu。
 
-![](wsl/20230921075234.png)
+![](/wsl/20230921075234.png)
 
 
 ## 配置代理
@@ -79,7 +79,7 @@ source proxy.sh set
 
 在 clash for windows 中，开启 `Allow LAN` 选项，就可以了。
 
-![](wsl/20230921080117.png)
+![](/wsl/20230921080117.png)
 
 
 ## 配置 terminal 以及常用命令行工具
@@ -131,13 +131,14 @@ home-manager switch
 
 大功告成，不过有个瑕疵是 terminal 的字体不对，zsh 主题有些图标显示为乱码。
 
-![](wsl/20230921090053.png)
+![](/wsl/20230921090053.png)
 
 下载 [Meslo LGM Nerd Font](https://github.com/ryanoasis/nerd-fonts/blob/master/patched-fonts/Meslo/M/Regular/MesloLGMNerdFont-Regular.ttf) 并安装。
 
 然后在 Windows Terminal 中将字体设置为 MesloLGM Nerd Font
 
-![](wsl/20230921090242.png)
+![](/wsl/20230921090242.png)
 
 现在看起来好多了。
-![](wsl/20230921090418.png)
+
+![](/wsl/20230921090418.png)
