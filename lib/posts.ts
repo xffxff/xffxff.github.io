@@ -65,6 +65,14 @@ export async function getPostData(id: string) {
   // Use gray-matter to parse the post metadata section
   const matterResult = matter(fileContents)
 
+  // get home directory of the user
+  const homeDir = require('os').homedir();
+  // FIXME: this is a hack to set the path of playwright executable. 
+  // I set it explicitly here because I when I run `npx playwright install --with-deps chromium`, 
+  // it installs the newest version, for now it's chromium-1080, but the code below is using chromium-1067
+  // if I don't set it explicitly, it will throw an error saying that can not find the executable
+  const playwrightExecutablePath = `${homeDir}/.cache/ms-playwright/chromium-1080/chrome-linux/chrome`
+
   // Use remark to convert markdown into HTML string
   const processedContent = await remark()
     .use(remarkParse)
@@ -77,6 +85,9 @@ export async function getPostData(id: string) {
           htmlLabels: true,
         },
         securityLevel: 'loose',
+      },
+      launchOptions: {
+        executablePath: playwrightExecutablePath
       }
     })
     .use(rehypeHighlight, { plainText: ['txt', 'text'] })
