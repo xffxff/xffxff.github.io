@@ -58,6 +58,36 @@ export function getAllPostIds() {
   })
 }
 
+function findChromeExecutable(basePath) {
+  let dirs = [];
+  try {
+    dirs = fs.readdirSync(basePath);
+  } catch (error) {
+    return null;
+  }
+
+  for (const dir of dirs) {
+    const fullPath = path.join(basePath, dir);
+
+    const stats = fs.statSync(fullPath);
+    if (stats.isDirectory()) {
+      if (dir.startsWith('chromium-') && basePath.endsWith('ms-playwright')) {
+        const executablePath = path.join(fullPath, 'chrome-linux', 'chrome');
+        if (fs.existsSync(executablePath)) {
+          return executablePath;
+        }
+      }
+
+      const deeperPath = findChromeExecutable(fullPath);
+      if (deeperPath) {
+        return deeperPath;
+      }
+    }
+  }
+
+  return null;
+}
+
 export async function getPostData(id: string) {
   const fullPath = path.join(postsDirectory, `${id}.md`)
   const fileContents = fs.readFileSync(fullPath, 'utf8')
@@ -67,11 +97,19 @@ export async function getPostData(id: string) {
 
   // get home directory of the user
   const homeDir = require('os').homedir();
+  const basePath = path.join(homeDir, '.cache');
+
   // FIXME: this is a hack to set the path of playwright executable. 
   // I set it explicitly here because I when I run `npx playwright install --with-deps chromium`, 
-  // it installs the newest version, for now it's chromium-1080, but the code below is using chromium-1067
+  // it installs the newest version, but the code below is using chromium-1067
   // if I don't set it explicitly, it will throw an error saying that can not find the executable
-  const playwrightExecutablePath = `${homeDir}/.cache/ms-playwright/chromium-1080/chrome-linux/chrome`
+  const playwrightExecutablePath = findChromeExecutable(basePath);
+
+  if (playwrightExecutablePath) {
+    console.log(`Found playwright executable at ${playwrightExecutablePath}`);
+  } else {
+    console.log('playwright executable not found.');
+  }
 
   // Use remark to convert markdown into HTML string
   const processedContent = await remark()
