@@ -94,4 +94,4 @@ cp _redirects versions
 
 Netlify 的部署配置如下：
 
-![](./netlify_build_settings.png)
+![](../netlify_build_settings.png)
