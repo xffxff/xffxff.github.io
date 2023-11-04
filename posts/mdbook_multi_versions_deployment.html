@@ -1,0 +1,75 @@
+<!DOCTYPE html><html><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width"/><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/github.min.css"/><title>部署多版本的 mdbook 到 Netlify</title><meta name="next-head-count" content="4"/><link rel="preload" href="/_next/static/css/ab65974685f462b8.css" as="style"/><link rel="stylesheet" href="/_next/static/css/ab65974685f462b8.css" data-n-g=""/><noscript data-n-css=""></noscript><script defer="" nomodule="" src="/_next/static/chunks/polyfills-78c92fac7aa8fdd8.js"></script><script src="/_next/static/chunks/webpack-8fa1640cc84ba8fe.js" defer=""></script><script src="/_next/static/chunks/framework-6cbe6e332df95288.js" defer=""></script><script src="/_next/static/chunks/main-26f9f36b33181737.js" defer=""></script><script src="/_next/static/chunks/pages/_app-2d6bf7b3192a8752.js" defer=""></script><script src="/_next/static/chunks/73-96e6cbd54826b874.js" defer=""></script><script src="/_next/static/chunks/pages/posts/%5Bid%5D-4b57e02c440700a5.js" defer=""></script><script src="/_next/static/_qgOuqiGxjUsSi8y35n2B/_buildManifest.js" defer=""></script><script src="/_next/static/_qgOuqiGxjUsSi8y35n2B/_ssgManifest.js" defer=""></script></head><body><div id="__next"><div class="max-w-4xl px-4 mt-12 mb-24 mx-auto"><main><article><h1 class="text-3xl font-medium my-4 border-b-0">部署多版本的 mdbook 到 Netlify</h1><div class="text-gray-500 mb-8 pb-2 border-b-2 border-solid border-slate-300"><time dateTime="2023-11-04">November 4, 2023</time></div><div><h2>背景</h2>
+<p>新版 Salsa（Salsa 2022）还没有完成，仍然有很多用户在用旧版 Salsa，但是其文档已经被新版 Salsa 的文档替代了。为了让用户能够访问到旧版 Salsa 的文档，我们也需要部署旧版本的文档。</p>
+<p>对应的 PR：<a href="https://github.com/salsa-rs/salsa/pull/451">https://github.com/salsa-rs/salsa/pull/451</a></p>
+<h2>方案一</h2>
+<p>我首先考虑的方案是在 Netlify 上部署两个项目，一个项目部署旧版 Salsa 的文档，另一个项目部署新版 Salsa 的文档。但是这样做有几个问题：</p>
+<ol>
+<li>两个项目的域名不一样，增加用户的记忆负担</li>
+<li>需要维护两个项目的部署</li>
+</ol>
+<h2>方案二</h2>
+<p>@nikomatsakis 建议让我们的 mdbook 支持多版本，而不是让旧版本重定向到一个外部链接。</p>
+<blockquote>
+<p>It'd be nice to modify the book here to just have both versions, I suppose, rather than redirecting to an external site. How hard would that be?</p>
+</blockquote>
+<p>最开始我想直接把旧版本的文档放到新版本的文档中，把它们合成一个新的 mdbook，文档的目录结构可能是这样的：</p>
+<pre><code>Salsa2022
+    - Overview
+    - Getting Started
+    - ...
+Salas
+    - Overview
+    - Getting Started
+    - ...
+</code></pre>
+<p>但是感觉这样比较麻烦，得手动把旧版本的文档复制到新版本的文档中，还得重新改造 <a href="https://github.com/salsa-rs/salsa/blob/2114c8ae0cb1ec23b56e31fbd3244d9f62e1f6c1/book/src/SUMMARY.md">SUMMARY.md</a></p>
+<p>后来我考虑通过 URL 路径来区分不同版本的文档，比如：</p>
+<pre><code>Salsa2022: https://salsa-rs.netlify.app/ or https://salsa-rs.netlify.app/salsa2022
+Salsa: https://salsa-rs.netlify.app/salsa
+</code></pre>
+<p>经过一番探索，发现是可行的，只需要分别编译出不同版本的文档，然后将其放入不同的目录，并部署至 Netlify。</p>
+<pre><code>versions/
+    - salsa2022/
+    - salsa/
+</code></pre>
+<p>另外，还需要一个 <code>_redirects</code> 文件，用来重定向到默认的版本，即重定向 <code>/</code> 到 <code>/salsa2022</code>。</p>
+<pre><code># _redirects file
+/                /salsa2022
+</code></pre>
+<p>最终的目录结构是这样的：</p>
+<pre><code>versions/
+    - salsa2022/
+    - salsa/
+    - _redirects
+</code></pre>
+<p>编译不同版本的 mdbook 可以通过下面的脚本来实现：</p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># 保存当前分支或提交哈希</span>
+original_branch=$(git rev-parse --abbrev-ref HEAD)
+<span class="hljs-keyword">if</span> [ <span class="hljs-string">"<span class="hljs-variable">$original_branch</span>"</span> == <span class="hljs-string">"HEAD"</span> ]; <span class="hljs-keyword">then</span>
+  original_branch=$(git rev-parse HEAD)
+<span class="hljs-keyword">fi</span>
+
+<span class="hljs-built_in">mkdir</span> -p versions  <span class="hljs-comment"># 为所有版本创建根目录</span>
+
+<span class="hljs-comment"># 声明关联数组来映射提交哈希到自定义版本目录名称</span>
+<span class="hljs-built_in">declare</span> -A commit_to_version=( [<span class="hljs-string">"<span class="hljs-variable">$original_branch</span>"</span>]=<span class="hljs-string">"salsa2022"</span> [<span class="hljs-string">"754eea8b5f8a31b1100ba313d59e41260b494225"</span>]=<span class="hljs-string">"salsa"</span> )
+
+<span class="hljs-comment"># 遍历关联数组中的键（提交哈希或分支名称）</span>
+<span class="hljs-keyword">for</span> commit <span class="hljs-keyword">in</span> <span class="hljs-string">"<span class="hljs-variable">${!commit_to_version[@]}</span>"</span>; <span class="hljs-keyword">do</span>
+  git checkout <span class="hljs-variable">$commit</span>
+  mdbook build
+  version_dir=<span class="hljs-string">"versions/<span class="hljs-variable">${commit_to_version[$commit]}</span>"</span>
+  <span class="hljs-built_in">mkdir</span> -p <span class="hljs-variable">$version_dir</span>
+  <span class="hljs-built_in">mv</span> book/html/* <span class="hljs-variable">$version_dir</span>
+  <span class="hljs-built_in">rm</span> -rf book
+<span class="hljs-keyword">done</span>
+
+<span class="hljs-comment"># 返回到原始分支或提交</span>
+git checkout <span class="hljs-variable">$original_branch</span>
+
+<span class="hljs-comment"># 将_redirects文件复制到根目录</span>
+<span class="hljs-built_in">cp</span> _redirects versions
+
+</code></pre>
+<p>Netlify 的部署配置如下：</p>
+<p><img src="./netlify_build_settings.png" alt=""></p></div></article></main><div class="mt-12"><a href="/">← 返回首页</a></div></div></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{"postData":{"id":"mdbook_multi_versions_deployment","contentHtml":"\u003ch2\u003e背景\u003c/h2\u003e\n\u003cp\u003e新版 Salsa（Salsa 2022）还没有完成，仍然有很多用户在用旧版 Salsa，但是其文档已经被新版 Salsa 的文档替代了。为了让用户能够访问到旧版 Salsa 的文档，我们也需要部署旧版本的文档。\u003c/p\u003e\n\u003cp\u003e对应的 PR：\u003ca href=\"https://github.com/salsa-rs/salsa/pull/451\"\u003ehttps://github.com/salsa-rs/salsa/pull/451\u003c/a\u003e\u003c/p\u003e\n\u003ch2\u003e方案一\u003c/h2\u003e\n\u003cp\u003e我首先考虑的方案是在 Netlify 上部署两个项目，一个项目部署旧版 Salsa 的文档，另一个项目部署新版 Salsa 的文档。但是这样做有几个问题：\u003c/p\u003e\n\u003col\u003e\n\u003cli\u003e两个项目的域名不一样，增加用户的记忆负担\u003c/li\u003e\n\u003cli\u003e需要维护两个项目的部署\u003c/li\u003e\n\u003c/ol\u003e\n\u003ch2\u003e方案二\u003c/h2\u003e\n\u003cp\u003e@nikomatsakis 建议让我们的 mdbook 支持多版本，而不是让旧版本重定向到一个外部链接。\u003c/p\u003e\n\u003cblockquote\u003e\n\u003cp\u003eIt'd be nice to modify the book here to just have both versions, I suppose, rather than redirecting to an external site. How hard would that be?\u003c/p\u003e\n\u003c/blockquote\u003e\n\u003cp\u003e最开始我想直接把旧版本的文档放到新版本的文档中，把它们合成一个新的 mdbook，文档的目录结构可能是这样的：\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003eSalsa2022\n    - Overview\n    - Getting Started\n    - ...\nSalas\n    - Overview\n    - Getting Started\n    - ...\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e但是感觉这样比较麻烦，得手动把旧版本的文档复制到新版本的文档中，还得重新改造 \u003ca href=\"https://github.com/salsa-rs/salsa/blob/2114c8ae0cb1ec23b56e31fbd3244d9f62e1f6c1/book/src/SUMMARY.md\"\u003eSUMMARY.md\u003c/a\u003e\u003c/p\u003e\n\u003cp\u003e后来我考虑通过 URL 路径来区分不同版本的文档，比如：\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003eSalsa2022: https://salsa-rs.netlify.app/ or https://salsa-rs.netlify.app/salsa2022\nSalsa: https://salsa-rs.netlify.app/salsa\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e经过一番探索，发现是可行的，只需要分别编译出不同版本的文档，然后将其放入不同的目录，并部署至 Netlify。\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003eversions/\n    - salsa2022/\n    - salsa/\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e另外，还需要一个 \u003ccode\u003e_redirects\u003c/code\u003e 文件，用来重定向到默认的版本，即重定向 \u003ccode\u003e/\u003c/code\u003e 到 \u003ccode\u003e/salsa2022\u003c/code\u003e。\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003e# _redirects file\n/                /salsa2022\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e最终的目录结构是这样的：\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003eversions/\n    - salsa2022/\n    - salsa/\n    - _redirects\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e编译不同版本的 mdbook 可以通过下面的脚本来实现：\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e\u003cspan class=\"hljs-comment\"\u003e# 保存当前分支或提交哈希\u003c/span\u003e\noriginal_branch=$(git rev-parse --abbrev-ref HEAD)\n\u003cspan class=\"hljs-keyword\"\u003eif\u003c/span\u003e [ \u003cspan class=\"hljs-string\"\u003e\"\u003cspan class=\"hljs-variable\"\u003e$original_branch\u003c/span\u003e\"\u003c/span\u003e == \u003cspan class=\"hljs-string\"\u003e\"HEAD\"\u003c/span\u003e ]; \u003cspan class=\"hljs-keyword\"\u003ethen\u003c/span\u003e\n  original_branch=$(git rev-parse HEAD)\n\u003cspan class=\"hljs-keyword\"\u003efi\u003c/span\u003e\n\n\u003cspan class=\"hljs-built_in\"\u003emkdir\u003c/span\u003e -p versions  \u003cspan class=\"hljs-comment\"\u003e# 为所有版本创建根目录\u003c/span\u003e\n\n\u003cspan class=\"hljs-comment\"\u003e# 声明关联数组来映射提交哈希到自定义版本目录名称\u003c/span\u003e\n\u003cspan class=\"hljs-built_in\"\u003edeclare\u003c/span\u003e -A commit_to_version=( [\u003cspan class=\"hljs-string\"\u003e\"\u003cspan class=\"hljs-variable\"\u003e$original_branch\u003c/span\u003e\"\u003c/span\u003e]=\u003cspan class=\"hljs-string\"\u003e\"salsa2022\"\u003c/span\u003e [\u003cspan class=\"hljs-string\"\u003e\"754eea8b5f8a31b1100ba313d59e41260b494225\"\u003c/span\u003e]=\u003cspan class=\"hljs-string\"\u003e\"salsa\"\u003c/span\u003e )\n\n\u003cspan class=\"hljs-comment\"\u003e# 遍历关联数组中的键（提交哈希或分支名称）\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003efor\u003c/span\u003e commit \u003cspan class=\"hljs-keyword\"\u003ein\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\"\u003cspan class=\"hljs-variable\"\u003e${!commit_to_version[@]}\u003c/span\u003e\"\u003c/span\u003e; \u003cspan class=\"hljs-keyword\"\u003edo\u003c/span\u003e\n  git checkout \u003cspan class=\"hljs-variable\"\u003e$commit\u003c/span\u003e\n  mdbook build\n  version_dir=\u003cspan class=\"hljs-string\"\u003e\"versions/\u003cspan class=\"hljs-variable\"\u003e${commit_to_version[$commit]}\u003c/span\u003e\"\u003c/span\u003e\n  \u003cspan class=\"hljs-built_in\"\u003emkdir\u003c/span\u003e -p \u003cspan class=\"hljs-variable\"\u003e$version_dir\u003c/span\u003e\n  \u003cspan class=\"hljs-built_in\"\u003emv\u003c/span\u003e book/html/* \u003cspan class=\"hljs-variable\"\u003e$version_dir\u003c/span\u003e\n  \u003cspan class=\"hljs-built_in\"\u003erm\u003c/span\u003e -rf book\n\u003cspan class=\"hljs-keyword\"\u003edone\u003c/span\u003e\n\n\u003cspan class=\"hljs-comment\"\u003e# 返回到原始分支或提交\u003c/span\u003e\ngit checkout \u003cspan class=\"hljs-variable\"\u003e$original_branch\u003c/span\u003e\n\n\u003cspan class=\"hljs-comment\"\u003e# 将_redirects文件复制到根目录\u003c/span\u003e\n\u003cspan class=\"hljs-built_in\"\u003ecp\u003c/span\u003e _redirects versions\n\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eNetlify 的部署配置如下：\u003c/p\u003e\n\u003cp\u003e\u003cimg src=\"./netlify_build_settings.png\" alt=\"\"\u003e\u003c/p\u003e","title":"部署多版本的 mdbook 到 Netlify","date":"2023-11-04"}},"__N_SSG":true},"page":"/posts/[id]","query":{"id":"mdbook_multi_versions_deployment"},"buildId":"_qgOuqiGxjUsSi8y35n2B","isFallback":false,"gsp":true,"scriptLoader":[]}</script></body></html>
