@@ -8,6 +8,8 @@ import remarkRehype from 'remark-rehype'
 import rehypeStringify from 'rehype-stringify'
 import rehypeHighlight from 'rehype-highlight'
 import rehypeMermaid from 'rehype-mermaidjs'
+import rehypeKatex from 'rehype-katex'
+import remarkMath from 'remark-math'
 
 const postsDirectory = path.join(process.cwd(), 'posts')
 
@@ -114,8 +116,12 @@ export async function getPostData(id: string) {
   // Use remark to convert markdown into HTML string
   const processedContent = await remark()
     .use(remarkParse)
+    .use(remarkMath)
     .use(remarkGfm)
     .use(remarkRehype)
+    .use(rehypeKatex, {
+      output: 'mathml',
+    })
     .use(rehypeMermaid, {
       strategy: 'img-svg',
       mermaidConfig: {
