@@ -19,3 +19,9 @@ def is_dataset_built_on_rank():
 
 ![alt text](/get_batch.png)
 [code link](https://github.com/NVIDIA/Megatron-LM/blob/2196398f5252ead6f036b06d45f7acb89b1308da/megatron/training/utils.py#L276-L314)
+
+---
+**Megatron-LM 的数据 .bin 和 .idx 文件存储了什么数据？分别有什么作用？**
+
+bin 文件存储的是对文本进行 tokenize 之后的 token ids，idx 存储 bin 文件的一些 metadata，比如 version，数据的 dtype，有多少个 sequence，每个 sequence 对应的 offset。总之，可以通过 idx 文件区分 bin 文件中哪些 token ids 是同一个 sequence 的。
+
