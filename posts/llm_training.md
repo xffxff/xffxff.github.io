@@ -21,7 +21,22 @@ def is_dataset_built_on_rank():
 [code link](https://github.com/NVIDIA/Megatron-LM/blob/2196398f5252ead6f036b06d45f7acb89b1308da/megatron/training/utils.py#L276-L314)
 
 ---
-**Megatron-LM 的数据 .bin 和 .idx 文件存储了什么数据？分别有什么作用？**
+**Megatron-LM 中 --overlap-grad-reduce 和 --overlap-param-gather 是在做什么？**
 
-bin 文件存储的是对文本进行 tokenize 之后的 token ids，idx 存储 bin 文件的一些 metadata，比如 version，数据的 dtype，有多少个 sequence，每个 sequence 对应的 offset。总之，可以通过 idx 文件区分 bin 文件中哪些 token ids 是同一个 sequence 的。
+简单来说，这两个参数是想在 DDP 下，做 forward，backward 以及 all reduce 之间的通信与计算的重叠。
 
+![alt text](/llm_training/image.png)
+
+核心的思路是不用等到所有的梯度都计算完了再进行 all reduce，而是在计算梯度的同时就开始 all reduce，这样可以减少计算和通信的时间。
+
+![alt text](/llm_training/image-2.png)
+
+比如说模型有 12 个 layer，可以分为 3 组，每组 4 个 layer，那么可以这样做，layer 8-11 backward 结束后，就可以开始这几个 layer 的 all reduce，与此同时 layer 4-7 的 backward 也可以开始。
+
+更进一步，all reduce 可以拆为 reduce scatter 和 all gather，（细节可以参考 [手把手推导Ring All-reduce的数学性质](https://zhuanlan.zhihu.com/p/504957661)) 这样拆的好处是 forward 也可以做重叠。先 all gather 前面一些层的参数，就可以开始 forward，与此同时 all gather 之后的一些层。
+
+![alt text](/llm_training/image-4.png)
+
+整体的流程如下：
+
+![alt text](/llm_training/image-5.png)
