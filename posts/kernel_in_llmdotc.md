@@ -152,3 +152,91 @@ for (int si = si_start; si < si_start + 32; si += 4) {
     }
 }
 ```
+
+## LayerNorm
+```c
+__global__ void layernorm_forward_kernel3(float* __restrict__ out, float* __restrict__ mean, float* __restrict__ rstd,
+                                    const float*  __restrict__ inp, const float*  __restrict__ weight,
+                                    const float* __restrict__ bias, int N, int C) {
+    cg::thread_block block = cg::this_thread_block();
+    cg::thread_block_tile<32> warp = cg::tiled_partition<32>(block);
+    int idx = blockIdx.x * warp.meta_group_size() + warp.meta_group_rank();
+    if(idx >= N) {
+        return;
+    }
+
+    // the row of input that this group of threads is responsible for
+    const float* x = inp + idx * C;
+
+    // mean
+    float sum = 0.0f;
+    for (int i = warp.thread_rank(); i < C; i += warp.size()) {
+        sum += x[i];
+    }
+    sum = cg::reduce(warp, sum, cg::plus<float>{});
+    float m = sum / C;
+    if(warp.thread_rank() == 0 && mean != nullptr) {
+        __stcs(mean + idx, m);
+    }
+
+    // rstd
+    sum = 0.0f;
+    for (int i = warp.thread_rank(); i < C; i += warp.size()) {
+        float diff = x[i] - m;
+        sum += diff * diff;
+    }
+    sum = cg::reduce(warp, sum, cg::plus<float>{});
+    float s = rsqrtf(sum / C + 1e-5f);
+    if(warp.thread_rank() == 0 && rstd != nullptr) {
+        __stcs(rstd + idx, s);
+    }
+
+    // final normalization and scaling by weight/bias
+    float* o = out + idx * C;
+    for (int c = warp.thread_rank(); c < C; c += warp.size()) {
+        // load and store using the .cs "streaming" hint to the compiler,
+        // indicating that this data will not be reused soon, and can be streamed through the caches
+        // this allows the threads to get more cache-hits for the (shared) weight and bias parameters
+        float n = s * (__ldcs(x+c) - m);
+        __stcs(o+c, n * weight[c] + bias[c]);
+    }
+}
+
+void layernorm_forward(float* out, float* mean, float* rstd,
+                       float* inp, float* weight, float* bias,
+                       int B, int T, int C) {
+    const int block_size = 128;
+    const int N = B * T;
+    const int grid_size = CEIL_DIV(N * 32, block_size);
+    layernorm_forward_kernel3<<<grid_size, block_size>>>(out, mean, rstd, inp, weight, bias, N, C);
+    cudaCheck(cudaGetLastError());
+}
+```
+
+https://github.com/karpathy/llm.c/blob/1dafa60ad972ae43d70080e2e9497c60ea31fe42/train_gpt2_fp32.cu#L116-L161
+
+这个 kernel 需要关注的点是对于 `cooperative_groups` 这个库的运用，比如下面这段代码
+```c
+cg::thread_block block = cg::this_thread_block();
+cg::thread_block_tile<32> warp = cg::tiled_partition<32>(block);
+int idx = blockIdx.x * warp.meta_group_size() + warp.meta_group_rank();
+if(idx >= N) {
+    return;
+}
+```
+
+这里实现了一个 warp 负责一行的计算，如果用 `blockIdx`, `blockDim`, `threadIdx` 来实现如上的功能，代码差不多像下面这样
+```c
+int warp_size = 32; 
+int idx = (blockIdx.x * blockDim.x + threadIdx.x) / warp_size;
+if(idx >= N) {
+    return;
+}
+```
+
+而随后 `warp.thread_rank()` 可以替代 `threadIdx.x % warp_size`，整体来说感觉使用 `cooperative_groups` 可以让代码更加清晰，直观。
+
+`cooperative_groups` 的另一个核心功能是支持更细粒度的 thread group 的 sync，传统使用 `__syncthreads()` 的时候，整个 block 的所有 thread 都会被阻塞。在我们的这段代码中，`cg::thread_block_tile<32> warp = cg::tiled_partition<32>(block)` 把 32 个 thread 分成一个 thread group （warp），在 warp level 上进行 sync，`sum = cg::reduce(warp, sum, cg::plus<float>{})`。
+
+[Cooperative Groups: Flexible CUDA Thread Programming](https://developer.nvidia.com/blog/cooperative-groups/) 这篇文章对 `cooperative_groups` 有详细的介绍，强烈推荐阅读。
+
