@@ -11,7 +11,7 @@ date: '2024-07-30'
 
 ![alt text](/how_to_write_a_cuda_program/image.png)
 
-对于 task A -> B -> C，每一个阶段都需要一个 extra parity wave。
+对于 task A -> B -> C，每一个阶段都需要一个 extra partial wave。
 
 ![alt text](/how_to_write_a_cuda_program/image-2.png)
 
