@@ -143,4 +143,4 @@ class GroupedMLP(nn.Module):
 
 ## Reference
 - [Grouped GEMM implemented in Triton](https://triton-lang.org/main/getting-started/tutorials/08-grouped-gemm.html)
-- [video: Write Grouped GEMMs in Triton Nvidia](https://triton-lang.org/main/getting-started/tutorials/08-grouped-gemm.html)
+- [video: Write Grouped GEMMs in Triton Nvidia](https://www.youtube.com/watch?v=_rrhYbvNIx0)
