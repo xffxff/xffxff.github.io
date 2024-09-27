@@ -1,0 +1,117 @@
+<!DOCTYPE html><html><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width"/><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/github.min.css"/><title>Grouped GEMM</title><meta name="next-head-count" content="4"/><link rel="preload" href="/_next/static/css/ab65974685f462b8.css" as="style"/><link rel="stylesheet" href="/_next/static/css/ab65974685f462b8.css" data-n-g=""/><noscript data-n-css=""></noscript><script defer="" nomodule="" src="/_next/static/chunks/polyfills-78c92fac7aa8fdd8.js"></script><script src="/_next/static/chunks/webpack-8fa1640cc84ba8fe.js" defer=""></script><script src="/_next/static/chunks/framework-6cbe6e332df95288.js" defer=""></script><script src="/_next/static/chunks/main-26f9f36b33181737.js" defer=""></script><script src="/_next/static/chunks/pages/_app-2d6bf7b3192a8752.js" defer=""></script><script src="/_next/static/chunks/73-96e6cbd54826b874.js" defer=""></script><script src="/_next/static/chunks/pages/posts/%5Bid%5D-4b57e02c440700a5.js" defer=""></script><script src="/_next/static/B6bfnZBrc4hF-4DFzBgHE/_buildManifest.js" defer=""></script><script src="/_next/static/B6bfnZBrc4hF-4DFzBgHE/_ssgManifest.js" defer=""></script></head><body><div id="__next"><div class="max-w-4xl px-4 mt-12 mb-24 mx-auto"><main><article><h1 class="text-3xl font-medium my-4 border-b-0">Grouped GEMM</h1><div class="text-gray-500 mb-8 pb-2 border-b-2 border-solid border-slate-300"><time dateTime="2024-09-27">September 27, 2024</time></div><div><p>最近瞅了一眼 <a href="https://github.com/tgale96/grouped_gemm">grouped gemm</a> 的代码，发现和我理解的 grouped gemm 有很大差异（我<a href="./finetune_moe_with_lora.md">上篇博客</a>中有大概介绍 grouped gemm 的原理）。这里 grouped gemm 的实现就是一个简单的 for 循环，然后调用 cublas 的 gemm 函数。</p>
+<pre><code class="hljs language-cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">CublasGroupedGemm</span><span class="hljs-params">(torch::Tensor a,
+		       torch::Tensor b,
+		       torch::Tensor c,
+		       torch::Tensor batch_sizes,
+		       <span class="hljs-type">bool</span> trans_b)</span> </span>{
+  <span class="hljs-type">int64_t</span> bs = batch_sizes.<span class="hljs-built_in">size</span>(<span class="hljs-number">0</span>), k = a.<span class="hljs-built_in">size</span>(<span class="hljs-number">1</span>);
+  <span class="hljs-type">int64_t</span> n = trans_b ? b.<span class="hljs-built_in">size</span>(<span class="hljs-number">1</span>) : b.<span class="hljs-built_in">size</span>(<span class="hljs-number">2</span>);
+  <span class="hljs-type">int64_t</span> b_rows = b.<span class="hljs-built_in">size</span>(<span class="hljs-number">1</span>), b_cols = b.<span class="hljs-built_in">size</span>(<span class="hljs-number">2</span>);
+  c10::BFloat16* a_ptr = a.<span class="hljs-built_in">data_ptr</span>&#x3C;c10::BFloat16>();
+  c10::BFloat16* b_ptr = b.<span class="hljs-built_in">data_ptr</span>&#x3C;c10::BFloat16>();
+  c10::BFloat16* c_ptr = c.<span class="hljs-built_in">data_ptr</span>&#x3C;c10::BFloat16>();
+  <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &#x3C; bs; ++i) {
+    <span class="hljs-type">int64_t</span> m = batch_sizes.<span class="hljs-built_in">data_ptr</span>&#x3C;<span class="hljs-type">int64_t</span>>()[i];
+    <span class="hljs-built_in">CublasGemm</span>(a_ptr, m, k, <span class="hljs-comment">/*trans_a=*/</span><span class="hljs-literal">false</span>,
+	       b_ptr, b_rows, b_cols, trans_b,
+	       c_ptr, m, n);
+    a_ptr += m * k;
+    b_ptr += b_rows * b_cols;
+    c_ptr += m * n;
+  }
+}
+</code></pre>
+<p>这个在逻辑上和下面的 PyTorch 实现是等价的：</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">sequential_gemm</span>(<span class="hljs-params"><span class="hljs-built_in">input</span>, weight, batch_sizes</span>):
+    n = <span class="hljs-built_in">input</span>.shape[<span class="hljs-number">0</span>]
+    out_features = weight.shape[-<span class="hljs-number">1</span>]
+    output = torch.zeros(
+        n, out_features, dtype=<span class="hljs-built_in">input</span>.dtype, device=<span class="hljs-built_in">input</span>.device
+    )
+
+    cumsum_batch_sizes = torch.cumsum(batch_sizes, dim=<span class="hljs-number">0</span>)
+    <span class="hljs-comment"># Insert zero at the beginning for offset index's convenience</span>
+    zero_tensor = torch.zeros(<span class="hljs-number">1</span>, dtype=torch.long, device=cumsum_batch_sizes.device)
+    cumsum_batch_sizes = torch.cat((zero_tensor, cumsum_batch_sizes))
+
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(weight.shape[<span class="hljs-number">0</span>]):
+        start = cumsum_batch_sizes[i]
+        end = cumsum_batch_sizes[i + <span class="hljs-number">1</span>]
+        input_for_this_batch = <span class="hljs-built_in">input</span>[start:end]
+
+        out = torch.matmul(input_for_this_batch, weight[i])
+        output[start:end] = out
+    <span class="hljs-keyword">return</span> output
+</code></pre>
+<p>我们可以对这两个实现进行 benchmark：</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> grouped_gemm <span class="hljs-keyword">import</span> ops
+<span class="hljs-keyword">import</span> triton
+<span class="hljs-keyword">import</span> torch
+<span class="hljs-keyword">import</span> triton.testing
+
+
+<span class="hljs-meta">@triton.testing.perf_report(<span class="hljs-params">
+    triton.testing.Benchmark(<span class="hljs-params">
+        x_names=[<span class="hljs-string">'num_groups'</span>],
+        x_vals=[<span class="hljs-number">2</span>**i <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-params"><span class="hljs-number">3</span>, <span class="hljs-number">8</span></span>)],
+        line_arg=<span class="hljs-string">'provider'</span>,
+        line_vals=[<span class="hljs-string">'sequential'</span>, <span class="hljs-string">'grouped'</span>],
+        line_names=[<span class="hljs-string">"Sequential GEMM"</span>, <span class="hljs-string">"Grouped GEMM"</span>],
+        styles=[(<span class="hljs-params"><span class="hljs-string">'green'</span>, <span class="hljs-string">'-'</span></span>), (<span class="hljs-params"><span class="hljs-string">'blue'</span>, <span class="hljs-string">'-'</span></span>)],
+        ylabel=<span class="hljs-string">"runtime(ms)"</span>,
+        plot_name=<span class="hljs-string">"sequential-vs-grouped-gemm-performance"</span>,
+        args={},
+    </span>)</span>)</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">benchmark</span>(<span class="hljs-params">num_groups, provider</span>):
+    num_groups = num_groups
+    n = <span class="hljs-number">24576</span>
+    hidden_size = <span class="hljs-number">1024</span>
+
+    a = torch.randn(n, hidden_size).view(-<span class="hljs-number">1</span>, hidden_size)
+    b = torch.randn(num_groups, hidden_size, hidden_size)
+
+    dist = torch.rand(num_groups, )
+    dist /= dist.<span class="hljs-built_in">sum</span>()
+    batch_sizes = (dist * n).to(torch.long)
+    error = n - batch_sizes.<span class="hljs-built_in">sum</span>()
+    batch_sizes[-<span class="hljs-number">1</span>] += error
+    <span class="hljs-keyword">assert</span> batch_sizes.<span class="hljs-built_in">sum</span>() == n
+
+    a = a.to(torch.bfloat16).cuda()
+    b = b.to(torch.bfloat16).cuda()
+
+    quantiles = [<span class="hljs-number">0.5</span>, <span class="hljs-number">0.2</span>, <span class="hljs-number">0.8</span>]
+    <span class="hljs-keyword">if</span> provider == <span class="hljs-string">'sequential'</span>:
+        ms, min_ms, max_ms = triton.testing.do_bench(<span class="hljs-keyword">lambda</span>: sequential_gemm(a, b, batch_sizes), quantiles=quantiles)
+    <span class="hljs-keyword">if</span> provider == <span class="hljs-string">'grouped'</span>:
+        ms, min_ms, max_ms = triton.testing.do_bench(<span class="hljs-keyword">lambda</span>: ops.gmm(a, b, batch_sizes), quantiles=quantiles)
+    <span class="hljs-keyword">return</span> ms, max_ms, min_ms
+
+benchmark.run(show_plots=<span class="hljs-literal">True</span>, print_data=<span class="hljs-literal">True</span>)
+</code></pre>
+<p>得到的结果如下：</p>
+<pre><code>sequential-vs-grouped-gemm-performance:
+   num_groups  Sequential GEMM  Grouped GEMM
+0         8.0         0.241248      0.151296
+1        16.0         0.464256      0.229712
+2        32.0         0.914784      0.367968
+3        64.0         1.717008      0.613440
+4       128.0         3.228896      1.117088
+</code></pre>
+<p>可以看到，即使这两个实现在逻辑上是等价的，PyTorch 底层也是调用的 cublas 的 gemm 函数，grouped gemm 的性能要比 sequential gemm 的性能好很多。</p>
+<p><img src="/grouped_gemm/image.png" alt="sequential gemm"></p>
+<p><img src="/grouped_gemm/image-1.png" alt="grouped gemm"></p>
+<p>通过 profile 可以看到，grouped gemm 的主要耗时在 kernel launch 以及 gemm 的计算，而 sequential gemm 会有很多额外的 overhead，包括几个 select，slice 操作，以及最后的 memory copy。另外，<code>aten::matmul</code> 相比直接调用 cublas 的 gemm 函数，也有一些额外的 overhead。</p>
+<p><a href="https://github.com/fanshiqing/grouped_gemm">这个仓库</a>是 fork 的 <a href="https://github.com/tgale96/grouped_gemm">tgale96/grouped_gemm</a>，<a href="https://github.com/fanshiqing/grouped_gemm/blob/172fada89fa7364fe5d026b3a0dfab58b591ffdd/csrc/grouped_gemm.cu#L288-L310">使用 multi stream 做了优化</a>，benchmark 结果如下：</p>
+<pre><code>   num_groups  Sequential GEMM  Grouped GEMM
+0         8.0         0.227760      0.145312
+1        16.0         0.480816      0.183040
+2        32.0         0.982000      0.280992
+3        64.0         1.731872      0.467136
+4       128.0         3.198544      0.803168
+</code></pre>
+<p>可以看到，使用 multi stream 优化后，性能有明显提升。</p>
+<p><img src="/grouped_gemm/image-2.png" alt="alt text">
+（这里使用了 4 个 stream）</p>
+<p>这里的场景是非常适合使用 multi stream 的，因为每个 gemm 都是独立的，由于 gemm 的大小又不一样，每个 gemm 的 workload 不一样，single stream 很容易有一些 GPU compute units 是空闲的。multi stream 可以增大 GPU compute units 的利用率，空闲的 compute units 可以计算其他 stream 中的 gemm。参考下面这张图</p>
+<p><img src="/how_to_write_a_cuda_program/image-4.png" alt=""></p></div></article></main><div class="mt-12"><a href="/">← 返回首页</a></div></div></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{"postData":{"id":"grouped_gemm","contentHtml":"\u003cp\u003e最近瞅了一眼 \u003ca href=\"https://github.com/tgale96/grouped_gemm\"\u003egrouped gemm\u003c/a\u003e 的代码，发现和我理解的 grouped gemm 有很大差异（我\u003ca href=\"./finetune_moe_with_lora.md\"\u003e上篇博客\u003c/a\u003e中有大概介绍 grouped gemm 的原理）。这里 grouped gemm 的实现就是一个简单的 for 循环，然后调用 cublas 的 gemm 函数。\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-cpp\"\u003e\u003cspan class=\"hljs-function\"\u003e\u003cspan class=\"hljs-type\"\u003evoid\u003c/span\u003e \u003cspan class=\"hljs-title\"\u003eCublasGroupedGemm\u003c/span\u003e\u003cspan class=\"hljs-params\"\u003e(torch::Tensor a,\n\t\t       torch::Tensor b,\n\t\t       torch::Tensor c,\n\t\t       torch::Tensor batch_sizes,\n\t\t       \u003cspan class=\"hljs-type\"\u003ebool\u003c/span\u003e trans_b)\u003c/span\u003e \u003c/span\u003e{\n  \u003cspan class=\"hljs-type\"\u003eint64_t\u003c/span\u003e bs = batch_sizes.\u003cspan class=\"hljs-built_in\"\u003esize\u003c/span\u003e(\u003cspan class=\"hljs-number\"\u003e0\u003c/span\u003e), k = a.\u003cspan class=\"hljs-built_in\"\u003esize\u003c/span\u003e(\u003cspan class=\"hljs-number\"\u003e1\u003c/span\u003e);\n  \u003cspan class=\"hljs-type\"\u003eint64_t\u003c/span\u003e n = trans_b ? b.\u003cspan class=\"hljs-built_in\"\u003esize\u003c/span\u003e(\u003cspan class=\"hljs-number\"\u003e1\u003c/span\u003e) : b.\u003cspan class=\"hljs-built_in\"\u003esize\u003c/span\u003e(\u003cspan class=\"hljs-number\"\u003e2\u003c/span\u003e);\n  \u003cspan class=\"hljs-type\"\u003eint64_t\u003c/span\u003e b_rows = b.\u003cspan class=\"hljs-built_in\"\u003esize\u003c/span\u003e(\u003cspan class=\"hljs-number\"\u003e1\u003c/span\u003e), b_cols = b.\u003cspan class=\"hljs-built_in\"\u003esize\u003c/span\u003e(\u003cspan class=\"hljs-number\"\u003e2\u003c/span\u003e);\n  c10::BFloat16* a_ptr = a.\u003cspan class=\"hljs-built_in\"\u003edata_ptr\u003c/span\u003e\u0026#x3C;c10::BFloat16\u003e();\n  c10::BFloat16* b_ptr = b.\u003cspan class=\"hljs-built_in\"\u003edata_ptr\u003c/span\u003e\u0026#x3C;c10::BFloat16\u003e();\n  c10::BFloat16* c_ptr = c.\u003cspan class=\"hljs-built_in\"\u003edata_ptr\u003c/span\u003e\u0026#x3C;c10::BFloat16\u003e();\n  \u003cspan class=\"hljs-keyword\"\u003efor\u003c/span\u003e (\u003cspan class=\"hljs-type\"\u003eint\u003c/span\u003e i = \u003cspan class=\"hljs-number\"\u003e0\u003c/span\u003e; i \u0026#x3C; bs; ++i) {\n    \u003cspan class=\"hljs-type\"\u003eint64_t\u003c/span\u003e m = batch_sizes.\u003cspan class=\"hljs-built_in\"\u003edata_ptr\u003c/span\u003e\u0026#x3C;\u003cspan class=\"hljs-type\"\u003eint64_t\u003c/span\u003e\u003e()[i];\n    \u003cspan class=\"hljs-built_in\"\u003eCublasGemm\u003c/span\u003e(a_ptr, m, k, \u003cspan class=\"hljs-comment\"\u003e/*trans_a=*/\u003c/span\u003e\u003cspan class=\"hljs-literal\"\u003efalse\u003c/span\u003e,\n\t       b_ptr, b_rows, b_cols, trans_b,\n\t       c_ptr, m, n);\n    a_ptr += m * k;\n    b_ptr += b_rows * b_cols;\n    c_ptr += m * n;\n  }\n}\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e这个在逻辑上和下面的 PyTorch 实现是等价的：\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-python\"\u003e\u003cspan class=\"hljs-keyword\"\u003edef\u003c/span\u003e \u003cspan class=\"hljs-title function_\"\u003esequential_gemm\u003c/span\u003e(\u003cspan class=\"hljs-params\"\u003e\u003cspan class=\"hljs-built_in\"\u003einput\u003c/span\u003e, weight, batch_sizes\u003c/span\u003e):\n    n = \u003cspan class=\"hljs-built_in\"\u003einput\u003c/span\u003e.shape[\u003cspan class=\"hljs-number\"\u003e0\u003c/span\u003e]\n    out_features = weight.shape[-\u003cspan class=\"hljs-number\"\u003e1\u003c/span\u003e]\n    output = torch.zeros(\n        n, out_features, dtype=\u003cspan class=\"hljs-built_in\"\u003einput\u003c/span\u003e.dtype, device=\u003cspan class=\"hljs-built_in\"\u003einput\u003c/span\u003e.device\n    )\n\n    cumsum_batch_sizes = torch.cumsum(batch_sizes, dim=\u003cspan class=\"hljs-number\"\u003e0\u003c/span\u003e)\n    \u003cspan class=\"hljs-comment\"\u003e# Insert zero at the beginning for offset index's convenience\u003c/span\u003e\n    zero_tensor = torch.zeros(\u003cspan class=\"hljs-number\"\u003e1\u003c/span\u003e, dtype=torch.long, device=cumsum_batch_sizes.device)\n    cumsum_batch_sizes = torch.cat((zero_tensor, cumsum_batch_sizes))\n\n    \u003cspan class=\"hljs-keyword\"\u003efor\u003c/span\u003e i \u003cspan class=\"hljs-keyword\"\u003ein\u003c/span\u003e \u003cspan class=\"hljs-built_in\"\u003erange\u003c/span\u003e(weight.shape[\u003cspan class=\"hljs-number\"\u003e0\u003c/span\u003e]):\n        start = cumsum_batch_sizes[i]\n        end = cumsum_batch_sizes[i + \u003cspan class=\"hljs-number\"\u003e1\u003c/span\u003e]\n        input_for_this_batch = \u003cspan class=\"hljs-built_in\"\u003einput\u003c/span\u003e[start:end]\n\n        out = torch.matmul(input_for_this_batch, weight[i])\n        output[start:end] = out\n    \u003cspan class=\"hljs-keyword\"\u003ereturn\u003c/span\u003e output\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e我们可以对这两个实现进行 benchmark：\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-python\"\u003e\u003cspan class=\"hljs-keyword\"\u003efrom\u003c/span\u003e grouped_gemm \u003cspan class=\"hljs-keyword\"\u003eimport\u003c/span\u003e ops\n\u003cspan class=\"hljs-keyword\"\u003eimport\u003c/span\u003e triton\n\u003cspan class=\"hljs-keyword\"\u003eimport\u003c/span\u003e torch\n\u003cspan class=\"hljs-keyword\"\u003eimport\u003c/span\u003e triton.testing\n\n\n\u003cspan class=\"hljs-meta\"\u003e@triton.testing.perf_report(\u003cspan class=\"hljs-params\"\u003e\n    triton.testing.Benchmark(\u003cspan class=\"hljs-params\"\u003e\n        x_names=[\u003cspan class=\"hljs-string\"\u003e'num_groups'\u003c/span\u003e],\n        x_vals=[\u003cspan class=\"hljs-number\"\u003e2\u003c/span\u003e**i \u003cspan class=\"hljs-keyword\"\u003efor\u003c/span\u003e i \u003cspan class=\"hljs-keyword\"\u003ein\u003c/span\u003e \u003cspan class=\"hljs-built_in\"\u003erange\u003c/span\u003e(\u003cspan class=\"hljs-params\"\u003e\u003cspan class=\"hljs-number\"\u003e3\u003c/span\u003e, \u003cspan class=\"hljs-number\"\u003e8\u003c/span\u003e\u003c/span\u003e)],\n        line_arg=\u003cspan class=\"hljs-string\"\u003e'provider'\u003c/span\u003e,\n        line_vals=[\u003cspan class=\"hljs-string\"\u003e'sequential'\u003c/span\u003e, \u003cspan class=\"hljs-string\"\u003e'grouped'\u003c/span\u003e],\n        line_names=[\u003cspan class=\"hljs-string\"\u003e\"Sequential GEMM\"\u003c/span\u003e, \u003cspan class=\"hljs-string\"\u003e\"Grouped GEMM\"\u003c/span\u003e],\n        styles=[(\u003cspan class=\"hljs-params\"\u003e\u003cspan class=\"hljs-string\"\u003e'green'\u003c/span\u003e, \u003cspan class=\"hljs-string\"\u003e'-'\u003c/span\u003e\u003c/span\u003e), (\u003cspan class=\"hljs-params\"\u003e\u003cspan class=\"hljs-string\"\u003e'blue'\u003c/span\u003e, \u003cspan class=\"hljs-string\"\u003e'-'\u003c/span\u003e\u003c/span\u003e)],\n        ylabel=\u003cspan class=\"hljs-string\"\u003e\"runtime(ms)\"\u003c/span\u003e,\n        plot_name=\u003cspan class=\"hljs-string\"\u003e\"sequential-vs-grouped-gemm-performance\"\u003c/span\u003e,\n        args={},\n    \u003c/span\u003e)\u003c/span\u003e)\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003edef\u003c/span\u003e \u003cspan class=\"hljs-title function_\"\u003ebenchmark\u003c/span\u003e(\u003cspan class=\"hljs-params\"\u003enum_groups, provider\u003c/span\u003e):\n    num_groups = num_groups\n    n = \u003cspan class=\"hljs-number\"\u003e24576\u003c/span\u003e\n    hidden_size = \u003cspan class=\"hljs-number\"\u003e1024\u003c/span\u003e\n\n    a = torch.randn(n, hidden_size).view(-\u003cspan class=\"hljs-number\"\u003e1\u003c/span\u003e, hidden_size)\n    b = torch.randn(num_groups, hidden_size, hidden_size)\n\n    dist = torch.rand(num_groups, )\n    dist /= dist.\u003cspan class=\"hljs-built_in\"\u003esum\u003c/span\u003e()\n    batch_sizes = (dist * n).to(torch.long)\n    error = n - batch_sizes.\u003cspan class=\"hljs-built_in\"\u003esum\u003c/span\u003e()\n    batch_sizes[-\u003cspan class=\"hljs-number\"\u003e1\u003c/span\u003e] += error\n    \u003cspan class=\"hljs-keyword\"\u003eassert\u003c/span\u003e batch_sizes.\u003cspan class=\"hljs-built_in\"\u003esum\u003c/span\u003e() == n\n\n    a = a.to(torch.bfloat16).cuda()\n    b = b.to(torch.bfloat16).cuda()\n\n    quantiles = [\u003cspan class=\"hljs-number\"\u003e0.5\u003c/span\u003e, \u003cspan class=\"hljs-number\"\u003e0.2\u003c/span\u003e, \u003cspan class=\"hljs-number\"\u003e0.8\u003c/span\u003e]\n    \u003cspan class=\"hljs-keyword\"\u003eif\u003c/span\u003e provider == \u003cspan class=\"hljs-string\"\u003e'sequential'\u003c/span\u003e:\n        ms, min_ms, max_ms = triton.testing.do_bench(\u003cspan class=\"hljs-keyword\"\u003elambda\u003c/span\u003e: sequential_gemm(a, b, batch_sizes), quantiles=quantiles)\n    \u003cspan class=\"hljs-keyword\"\u003eif\u003c/span\u003e provider == \u003cspan class=\"hljs-string\"\u003e'grouped'\u003c/span\u003e:\n        ms, min_ms, max_ms = triton.testing.do_bench(\u003cspan class=\"hljs-keyword\"\u003elambda\u003c/span\u003e: ops.gmm(a, b, batch_sizes), quantiles=quantiles)\n    \u003cspan class=\"hljs-keyword\"\u003ereturn\u003c/span\u003e ms, max_ms, min_ms\n\nbenchmark.run(show_plots=\u003cspan class=\"hljs-literal\"\u003eTrue\u003c/span\u003e, print_data=\u003cspan class=\"hljs-literal\"\u003eTrue\u003c/span\u003e)\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e得到的结果如下：\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003esequential-vs-grouped-gemm-performance:\n   num_groups  Sequential GEMM  Grouped GEMM\n0         8.0         0.241248      0.151296\n1        16.0         0.464256      0.229712\n2        32.0         0.914784      0.367968\n3        64.0         1.717008      0.613440\n4       128.0         3.228896      1.117088\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e可以看到，即使这两个实现在逻辑上是等价的，PyTorch 底层也是调用的 cublas 的 gemm 函数，grouped gemm 的性能要比 sequential gemm 的性能好很多。\u003c/p\u003e\n\u003cp\u003e\u003cimg src=\"/grouped_gemm/image.png\" alt=\"sequential gemm\"\u003e\u003c/p\u003e\n\u003cp\u003e\u003cimg src=\"/grouped_gemm/image-1.png\" alt=\"grouped gemm\"\u003e\u003c/p\u003e\n\u003cp\u003e通过 profile 可以看到，grouped gemm 的主要耗时在 kernel launch 以及 gemm 的计算，而 sequential gemm 会有很多额外的 overhead，包括几个 select，slice 操作，以及最后的 memory copy。另外，\u003ccode\u003eaten::matmul\u003c/code\u003e 相比直接调用 cublas 的 gemm 函数，也有一些额外的 overhead。\u003c/p\u003e\n\u003cp\u003e\u003ca href=\"https://github.com/fanshiqing/grouped_gemm\"\u003e这个仓库\u003c/a\u003e是 fork 的 \u003ca href=\"https://github.com/tgale96/grouped_gemm\"\u003etgale96/grouped_gemm\u003c/a\u003e，\u003ca href=\"https://github.com/fanshiqing/grouped_gemm/blob/172fada89fa7364fe5d026b3a0dfab58b591ffdd/csrc/grouped_gemm.cu#L288-L310\"\u003e使用 multi stream 做了优化\u003c/a\u003e，benchmark 结果如下：\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003e   num_groups  Sequential GEMM  Grouped GEMM\n0         8.0         0.227760      0.145312\n1        16.0         0.480816      0.183040\n2        32.0         0.982000      0.280992\n3        64.0         1.731872      0.467136\n4       128.0         3.198544      0.803168\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e可以看到，使用 multi stream 优化后，性能有明显提升。\u003c/p\u003e\n\u003cp\u003e\u003cimg src=\"/grouped_gemm/image-2.png\" alt=\"alt text\"\u003e\n（这里使用了 4 个 stream）\u003c/p\u003e\n\u003cp\u003e这里的场景是非常适合使用 multi stream 的，因为每个 gemm 都是独立的，由于 gemm 的大小又不一样，每个 gemm 的 workload 不一样，single stream 很容易有一些 GPU compute units 是空闲的。multi stream 可以增大 GPU compute units 的利用率，空闲的 compute units 可以计算其他 stream 中的 gemm。参考下面这张图\u003c/p\u003e\n\u003cp\u003e\u003cimg src=\"/how_to_write_a_cuda_program/image-4.png\" alt=\"\"\u003e\u003c/p\u003e","title":"Grouped GEMM","date":"2024-09-27"}},"__N_SSG":true},"page":"/posts/[id]","query":{"id":"grouped_gemm"},"buildId":"B6bfnZBrc4hF-4DFzBgHE","isFallback":false,"gsp":true,"scriptLoader":[]}</script></body></html>
