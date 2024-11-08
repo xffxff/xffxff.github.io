@@ -117,10 +117,12 @@ sequential-vs-grouped-gemm-performance:
 可以看到，即使这两个实现在逻辑上是等价的，PyTorch 底层也是调用的 cublas 的 gemm 函数，grouped gemm 的性能要比 sequential gemm 的性能好很多。
 
 ![sequential gemm](/grouped_gemm/image.png)
+*NSight Systems profile of sequential GEMM implementation*
 
 ![grouped gemm](/grouped_gemm/image-1.png)
+*NSight Systems profile of grouped GEMM implementation*
 
-通过 profile 可以看到，grouped gemm 的主要耗时在 kernel launch 以及 gemm 的计算，而 sequential gemm 会有很多额外的 overhead，包括几个 select，slice 操作，以及最后的 memory copy。另外，`aten::matmul` 相比直接调用 cublas 的 gemm 函数，也有一些额外的 overhead。
+通过 profile 可以看到，grouped gemm 的主要耗时在 kernel launch 以及 gemm 的计算，而 sequential gemm 会有很多额外的 overhead，包括几个 select，slice 操作，以及最后的 memory copy。另外，`aten::matmul` 相比直接调用 cublas 的 gemm 函数，pytorch 有更多层的封装，层层函数调用带来了额外的 overhead。
 
 [这个仓库](https://github.com/fanshiqing/grouped_gemm)是 fork 的 [tgale96/grouped_gemm](https://github.com/tgale96/grouped_gemm)，[使用 multi stream 做了优化](https://github.com/fanshiqing/grouped_gemm/blob/172fada89fa7364fe5d026b3a0dfab58b591ffdd/csrc/grouped_gemm.cu#L288-L310)，benchmark 结果如下：
 ```
