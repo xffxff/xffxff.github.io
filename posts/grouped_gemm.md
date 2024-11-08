@@ -3,7 +3,7 @@ title: 'Grouped GEMM'
 date: '2024-09-27'
 ---
 
-最近瞅了一眼 [grouped gemm](https://github.com/tgale96/grouped_gemm) 的代码，发现和我理解的 grouped gemm 有很大差异（我[上篇博客](./finetune_moe_with_lora.md)中有大概介绍 grouped gemm 的原理）。这里 grouped gemm 的实现就是一个简单的 for 循环，然后调用 cublas 的 gemm 函数。
+最近瞅了一眼 [grouped gemm](https://github.com/tgale96/grouped_gemm) 的代码，发现和我理解的 grouped gemm 有很大差异（我[上篇博客](./finetune_moe_with_lora)中有大概介绍 grouped gemm 的原理）。这里 grouped gemm 的实现就是一个简单的 for 循环，然后调用 cublas 的 gemm 函数。
 
 ```cpp
 void CublasGroupedGemm(torch::Tensor a,
